@@ -1,4 +1,17 @@
 
+try {
+	(function() {var a = console.log;})();
+}
+catch (e) {
+	console = {
+		log: function(object) {
+			setTimeout(function() {
+				throw new Error("log: "+JSON.stringify(object));
+			},1);
+		}
+	}
+}
+
 
 
 
@@ -10,6 +23,14 @@ Paint = {
 		globals: {}
 	}
 };
+
+Paint.tools.Pointer = function(data) {
+
+}
+Paint.tools.Pointer.UI = function() {
+	this.elements = [];
+	this.cursor = "auto";
+}
 
 Paint.tools.Brush = function(data) {
 	var points = data.points;
@@ -26,9 +47,12 @@ Paint.tools.Brush = function(data) {
 	else {
 		pos = points[0];
 	}
-	
-	var lineWidth = data.lineWidth || "5";
-	var strokeStyle = data.strokeStyle || ("#"+Paint.settings.globals.colour.toString());
+	var lineWidth = data.lineWidth || Paint.settings.Brush.size.getValue();
+	var strokeStyle = data.strokeStyle;
+	if (!strokeStyle) {
+		 var rgb = Paint.settings.globals.colour.rgb;
+		 strokeStyle = "rgba("+(rgb[0]*255.0)+","+(rgb[1]*255.0)+","+(rgb[2]*255.0)+","+(Paint.settings.globals.opacity.getValue()/255.0)+")";
+	}
 	
 	this.Render = function(layer) {
 		var ctx = layer.canvasElm.getContext("2d");
@@ -82,10 +106,16 @@ Paint.tools.Brush = function(data) {
 		};
 	}
 }
-
-
-Paint.tools.Brush.UI = function(parent) {
-	//if (Paint.settings.brush)
+Paint.tools.Brush.UI = function() {
+	this.size = new Paint.ui.slider(1, 100, 20);
+	this.shadow = new Paint.ui.slider(0, 100, 0);
+	this.elements = [
+		new Paint.ui.label("Size:", "strong")
+		,this.size
+		//,new Paint.ui.label("Shadow:", "strong")
+		//,this.shadow
+	];
+	this.cursor = "crosshair";
 };
 
 Paint.ui.colourPicker = function(label) {
@@ -95,18 +125,85 @@ Paint.ui.colourPicker = function(label) {
 	span.appendChild(pickerElm);
 	var picker = new jscolor.color(pickerElm, {});
 	parent.appendChild(span);
-	
-	
 	this.getColour = function() {
 		return "#"+picker.color.toString();
 	}
-	
 }
 
-Paint.ui.splitter = function(parent) {
-	var sp = document.createElement("span");
-	sp.className = 'splitter';
-	parent.appendChild(sp);
+Paint.ui.label = function(HTML, type) {
+	type = type || "strong";
+	this.elm = document.createElement(type);
+	this.elm.innerHTML = HTML;
+}
+
+Paint.ui.slider = function(min, max, value) {
+	this.elm = document.createElement("input");
+	this.elm.type = "range";
+	this.elm.min = min;
+	this.elm.max = max || 100;
+	this.elm.value = value;
+	this.getValue = function() {
+		if (this.elm.value !== undefined) {
+			return Math.max(this.elm.min,Math.min(parseInt(this.elm.value,10),this.elm.max));
+		}
+	}
+}
+
+Paint.ui.splitter = function() {
+	this.elm = document.createElement("span");
+	this.elm.className = 'splitter';
+}
+
+
+Paint.Toolbar = function(div_id, painter) {
+	var divElm = document.getElementById(div_id);
+	var toolsElm = document.createElement("div");
+	var settingsElm = document.createElement("div");
+	var toolSettingsElm = document.createElement("div");
+	toolsElm.style.display = 'inline';
+	settingsElm.style.display = 'inline';
+	toolSettingsElm.style.display = 'inline';
+	
+	divElm.appendChild(toolsElm);
+	divElm.appendChild(new Paint.ui.splitter().elm);
+	divElm.appendChild(settingsElm);
+	divElm.appendChild(new Paint.ui.splitter().elm)
+	divElm.appendChild(toolSettingsElm);
+	
+	var cpicker = document.createElement('input');
+	Paint.settings.globals.colour = new jscolor.color(cpicker, {});
+	Paint.settings.globals.colour.fromString("FF0000");
+	settingsElm.appendChild(cpicker);
+	
+	settingsElm.appendChild(new Paint.ui.label("Opacity").elm);
+	Paint.settings.globals.opacity = new Paint.ui.slider(0, 255, 255);
+	settingsElm.appendChild(Paint.settings.globals.opacity.elm);
+	
+	
+	for (var b in Paint.tools) {
+		var toolElm = document.createElement("button");
+		toolElm.innerHTML = b;
+		toolElm.name = b;
+		toolsElm.appendChild(toolElm);
+		toolElm.onclick = function() {
+			painter.setTool(this.name);
+			
+
+		}
+	}
+	
+	this.setTool = function(toolname) {
+		toolSettingsElm.innerHTML = "";
+		if (!Paint.settings[toolname]) {
+			Paint.settings[toolname] = new Paint.tools[toolname].UI();
+		}
+		if (Paint.settings[toolname].elements) {
+			for (var i = 0;i<Paint.settings[toolname].elements.length;i++) {
+				toolSettingsElm.appendChild(Paint.settings[toolname].elements[i].elm);
+			}
+		}
+		document.body.style.cursor = Paint.settings[toolname].cursor || "auto";
+	}
 }
 
 Paint.Layer = function(opts, id) {
@@ -135,41 +232,6 @@ Paint.Layer = function(opts, id) {
 	}
 }
 
-Paint.Toolbar = function(div_id, painter) {
-	var divElm = document.getElementById(div_id);
-	var toolsElm = document.createElement("div");
-	var settingsElm = document.createElement("div");
-	var toolSettingsElm = document.createElement("div");
-	toolsElm.style.display = 'inline';
-	settingsElm.style.display = 'inline';
-	toolSettingsElm.style.display = 'inline';
-	
-	divElm.appendChild(toolsElm);
-	Paint.ui.splitter(divElm);
-	divElm.appendChild(settingsElm);
-	Paint.ui.splitter(divElm);
-	divElm.appendChild(toolSettingsElm);
-	
-	var cpicker = document.createElement('input');
-	Paint.settings.globals.colour = new jscolor.color(cpicker, {});
-	Paint.settings.globals.colour.fromString("FF0000");
-	settingsElm.appendChild(cpicker);
-	
-	for (var b in Paint.tools) {
-		var toolElm = document.createElement("button");
-		toolElm.innerHTML = b;
-		toolsElm.appendChild(toolElm);
-		toolElm.onclick = function() {
-			painter.setTool(b);
-		}
-	}
-	
-	this.setTool = function(toolname) {
-		toolSettingsElm.innerHTML = "";
-		Paint.tools[toolname].UI(toolSettingsElm);
-	}
-}
-
 Paint.Painter = function() {
 	var layers = [];
 	var current_layer = null;
@@ -179,6 +241,7 @@ Paint.Painter = function() {
 	var current_tool = null;
 	var socket;
 	var toolbar = null;
+	var last_sent_id;
 	
 	this.AddLayer = function(opts) {
 		if (!opts) opts = {};
@@ -209,6 +272,10 @@ Paint.Painter = function() {
 				var tool = new Paint.tools[command.name](command.data);
 				tool.Render(layers[command.layerid]);
 				if (is_new) {layers[command.layerid].addHistory(command);}
+				if (command.rnd_id === last_sent_id) {
+					last_sent_id = 0;
+					canvas.getTempLayer().Clear();
+				}
 				break;
 			default:
 				console.log("Unknown command", command);
@@ -256,21 +323,24 @@ Paint.Painter = function() {
 	
 	this.MouseMove = function(pos) {
 		if (current_tool) {
-			current_tool.MouseMove(pos, canvas.getTempLayer());
+			if (current_tool.MouseMove) current_tool.MouseMove(pos, canvas.getTempLayer());
 		}
 	}
 	
 	this.MouseUp = function(pos) {
 		if (current_tool) {
-			current_tool.MouseUp(pos);
-			
-			if (socket) {
-				socket.send({'command': {
-					cmd: 'tool',
-					name: current_tool.name,
-					data: current_tool.getData(),
-					layerid: current_layer.id
-				}});
+			if (current_tool.MouseDown) current_tool.MouseUp(pos);
+			if (current_tool.getData) {
+				if (socket) {
+					last_sent_id = tools.randRangeInt(1,1000);
+					socket.send({'command': {
+						cmd: 'tool',
+						name: current_tool.name,
+						data: current_tool.getData(),
+						layerid: current_layer.id,
+						rnd_id: last_sent_id
+					}});
+				}
 			}
 			current_tool = null;
 		}
