@@ -32,7 +32,7 @@ paint.Document = function() {
 				//TODO: Validate tool commands
 				break;
 		}
-		
+		command.id = history.length;
 		history.push(command);
 	}
 	
