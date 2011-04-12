@@ -35,6 +35,6 @@ app.get('/paint/:id', function(req, res) {
     res.render('paint', {room: roomname});
 });
 
-app.listen(8200);
+app.listen(8765);
 paintserver.Server(app);
 
