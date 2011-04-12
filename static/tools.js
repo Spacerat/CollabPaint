@@ -10,6 +10,17 @@ tools = new function() {
     	return Math.floor(this.randRange(minv, maxv+1))
     }
 
+	function findAbsolutePosition(obj) {
+		var curleft = curtop = 0;
+		if (obj.offsetParent) {
+			do {
+				curleft += obj.offsetLeft;
+				curtop += obj.offsetTop;
+			} while (obj = obj.offsetParent);
+		}
+		return {x: curleft, y:curtop};
+	}
+
 	//Given a mouse event, find the mouse position relative to an element.
 	this.getRelativeMousePos = function(e, element) {
 		var x;
@@ -22,8 +33,9 @@ tools = new function() {
 		  x = e.clientX + document.body.scrollLeft + document.documentElement.scrollLeft; 
 		  y = e.clientY + document.body.scrollTop + document.documentElement.scrollTop; 
 		} 
-		x -= element.offsetLeft;
-		y -= element.offsetTop;
+		var abspos = findAbsolutePosition(element);
+		x -= abspos.x;
+		y -= abspos.y
 		return {x: x, y:y};
 	}
 	
