@@ -1,0 +1,29 @@
+
+body {
+	margin: 0;
+}
+
+#paint_canvas {
+	position: relative;
+	width: 90%;
+	height: 600px;
+	margin-left: auto;
+	margin-right: auto;
+	border: thin black solid;
+}
+
+canvas.canvas {
+	width: 100%;
+	height: 100%;
+	position: absolute;
+	top: 0;
+}
+
+#toolbar {
+	background: #FFFFFF;
+	position: relative;
+	border: thin black solid;
+	
+	z-index: 2;
+}
+

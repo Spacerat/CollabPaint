@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <title>Paint</title>
+        
+        <link rel="stylesheet" type="text/css" href="../style.css" />
+        
+        <script src="../socket.io/socket.io.js"></script>
+
+        
+		<script src="../tools.min.js"> </script>
+		<script src="../jscolor/jscolor.min.js"></script>
+		<script src="../paint.js"> </script>
+        <script src="../client_net.js"></script>		
+        
+		<script> 
+			window.onload = function() {
+				
+				var doc = new Paint.Painter();
+				doc.CreateCanvas("paint_canvas");
+				doc.Connect("<%= room%>");
+				/*
+				var c = document.getElementById("colpicker");
+				var s = document.getElementById("penWidth");
+				paint.getColour = function() {return "#"+c.color.toString();}
+				paint.getPenWidth = function() {return parseInt(s.value,10);}
+				*/
+			}
+		</script>		
+
+		
+    </head>
+    <body ondragstart="return false;">
+    	<!--
+		<div id = "toolbar">
+	   		<strong>Colour:</strong> <input id="colpicker" class="color" value="ff0000">
+	   		<strong>PenWidth:</strong> <input type="range" id="penWidth" min="1" max="50" value = "10"/>
+		</div>
+		
+		<div id = "canvas"></div>
+		!-->
+		<h1> Paint - <%= room %></h1>
+		<div id="paint_canvas"> </div>
+		
+    </body>
+</html>
