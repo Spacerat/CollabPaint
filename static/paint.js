@@ -1,6 +1,15 @@
 
-//Namespace
-Paint = {tools: {}}
+
+
+
+//Namespaces
+Paint = {
+	tools: {}, 
+	ui: {}, 
+	settings: {
+		globals: {}
+	}
+};
 
 Paint.tools.Brush = function(data) {
 	var points = data.points;
@@ -19,7 +28,7 @@ Paint.tools.Brush = function(data) {
 	}
 	
 	var lineWidth = data.lineWidth || "5";
-	var strokeStyle = data.strokeStyle || "black";
+	var strokeStyle = data.strokeStyle || ("#"+Paint.settings.globals.colour.toString());
 	
 	this.Render = function(layer) {
 		var ctx = layer.canvasElm.getContext("2d");
@@ -72,7 +81,32 @@ Paint.tools.Brush = function(data) {
 			points: points
 		};
 	}
+}
+
+
+Paint.tools.Brush.UI = function(parent) {
+	//if (Paint.settings.brush)
+};
+
+Paint.ui.colourPicker = function(label) {
+	var span = document.createElement("span");
+	span.innerHTML = '<strong>'+label+'</strong>';
+	var pickerElm = document.createElement('input');
+	span.appendChild(pickerElm);
+	var picker = new jscolor.color(pickerElm, {});
+	parent.appendChild(span);
 	
+	
+	this.getColour = function() {
+		return "#"+picker.color.toString();
+	}
+	
+}
+
+Paint.ui.splitter = function(parent) {
+	var sp = document.createElement("span");
+	sp.className = 'splitter';
+	parent.appendChild(sp);
 }
 
 Paint.Layer = function(opts, id) {
@@ -82,6 +116,7 @@ Paint.Layer = function(opts, id) {
 	this.canvasElm.className = 'canvas';
 	this.canvasElm.id = "layer_"+this.name;
 	this.id = id;
+	var history = [];
 	this.Attach = function(parent) {
 		parent.appendChild(this.canvasElm);
 		this.canvasElm.width = parent.offsetWidth;
@@ -90,6 +125,49 @@ Paint.Layer = function(opts, id) {
 	this.Clear = function() {
 		this.canvasElm.getContext("2d").clearRect(0, 0, this.canvasElm.width, this.canvasElm.height);
 	}
+	this.addHistory = function(command) {
+		history.push(command);
+	}
+	this.RenderHistory = function(painter) {
+		for (var i=0;i<history.length;i++) {
+			painter.ProcessCommand(history[i]);
+		}
+	}
+}
+
+Paint.Toolbar = function(div_id, painter) {
+	var divElm = document.getElementById(div_id);
+	var toolsElm = document.createElement("div");
+	var settingsElm = document.createElement("div");
+	var toolSettingsElm = document.createElement("div");
+	toolsElm.style.display = 'inline';
+	settingsElm.style.display = 'inline';
+	toolSettingsElm.style.display = 'inline';
+	
+	divElm.appendChild(toolsElm);
+	Paint.ui.splitter(divElm);
+	divElm.appendChild(settingsElm);
+	Paint.ui.splitter(divElm);
+	divElm.appendChild(toolSettingsElm);
+	
+	var cpicker = document.createElement('input');
+	Paint.settings.globals.colour = new jscolor.color(cpicker, {});
+	Paint.settings.globals.colour.fromString("FF0000");
+	settingsElm.appendChild(cpicker);
+	
+	for (var b in Paint.tools) {
+		var toolElm = document.createElement("button");
+		toolElm.innerHTML = b;
+		toolsElm.appendChild(toolElm);
+		toolElm.onclick = function() {
+			painter.setTool(b);
+		}
+	}
+	
+	this.setTool = function(toolname) {
+		toolSettingsElm.innerHTML = "";
+		Paint.tools[toolname].UI(toolSettingsElm);
+	}
 }
 
 Paint.Painter = function() {
@@ -97,9 +175,10 @@ Paint.Painter = function() {
 	var current_layer = null;
 	var canvas;
 	var that = this;
-	var selected_tool = "Brush";
+	var selected_tool = "";
 	var current_tool = null;
 	var socket;
+	var toolbar = null;
 	
 	this.AddLayer = function(opts) {
 		if (!opts) opts = {};
@@ -117,7 +196,11 @@ Paint.Painter = function() {
 		canvas.Init();
 	};
 	
-	this.ProcessCommand = function(command, socket) {
+	this.CreateToolbar = function(object_id) {
+		toolbar = new Paint.Toolbar(object_id, this);
+	}
+	
+	this.ProcessCommand = function(command, is_new, socket) {
 		switch (command.cmd) {
 			case 'new_layer':
 				this.AddLayer(command.params);
@@ -125,7 +208,7 @@ Paint.Painter = function() {
 			case 'tool': 
 				var tool = new Paint.tools[command.name](command.data);
 				tool.Render(layers[command.layerid]);
-				
+				if (is_new) {layers[command.layerid].addHistory(command);}
 				break;
 			default:
 				console.log("Unknown command", command);
@@ -148,14 +231,18 @@ Paint.Painter = function() {
 				switch (msgname) {
 					case 'history':
 						for (var i = 0; i<msg.length; i++) {
-							that.ProcessCommand(msg[i], socket);
+							that.ProcessCommand(msg[i], true, socket);
 						}
 						break;
 					case 'command':
-						that.ProcessCommand(msg, socket);
+						that.ProcessCommand(msg, true,  socket);
+						break;
+					case 'reject':
+						alert(msg.reason);
 						break;
 					default: 
-						console.log("Unknown message", msgname, msg);
+						//console.log("Unknown message", msgname, msg);
+						break;
 				}
 			}
 		});
@@ -188,6 +275,17 @@ Paint.Painter = function() {
 			current_tool = null;
 		}
 	}
+	
+	this.getLayers = function(){return layers;};
+	
+	this.getSelectedTool = function() {
+		return selected_tool;
+	}
+	
+	this.setTool = function(toolname) {
+		selected_tool = toolname;
+		toolbar.setTool(toolname);
+	}
 }
 
 Paint.Canvas = function(object_id, painter) {
@@ -201,8 +299,7 @@ Paint.Canvas = function(object_id, painter) {
 		layersElm = document.createElement("div");
 		layersElm.id = 'layers';
 		containerElm.appendChild(layersElm);
-
-		temp_layer.Attach(containerElm);
+		temp_layer.Attach(layersElm);
 		
 		var downEvent = function(evt) {
 			//evt.preventDefault();
@@ -220,8 +317,23 @@ Paint.Canvas = function(object_id, painter) {
 			painter.MouseUp(pos);
 		};
 		
+		var resizetimer;
+		window.onresize = function() {
+			clearTimeout(resizetimer);
+			resizetimer = setTimeout(function() {
+				temp_layer.canvasElm.width = containerElm.offsetWidth;
+				temp_layer.canvasElm.height = containerElm.offsetHeight;
+				var layers = painter.getLayers();
+				for (var i=0;i<layers.length;i++) {
+					layers[i].canvasElm.width = containerElm.offsetWidth;
+					layers[i].canvasElm.height = containerElm.offsetHeight;
+					layers[i].RenderHistory(painter);
+				}
+			}, 10);
+		}
+		
 		if ('ontouchstart' in window) {
-			containerElm.addEventListener("touchstart", downEvent, false);
+			document.addEventListener("touchstart", downEvent, false);
 			document.body.addEventListener('touchmove',moveEvent , false);
 			document.body.addEventListener('touchend', upEvent, false);
 		}
@@ -235,8 +347,11 @@ Paint.Canvas = function(object_id, painter) {
 	
 	this.AddLayer = function(layer) {
 		layersElm.appendChild(layer.canvasElm);
-		layer.canvasElm.width = temp_layer.canvasElm.width;
-		layer.canvasElm.height = temp_layer.canvasElm.height;
+		layer.canvasElm.width = containerElm.offsetWidth;
+		layer.canvasElm.height = containerElm.offsetHeight;
+		layer.Clear();
+		layersElm.removeChild(temp_layer.canvasElm);
+		temp_layer.Attach(layersElm);
 	}
 	
 	this.getTempLayer = function() {return temp_layer;};

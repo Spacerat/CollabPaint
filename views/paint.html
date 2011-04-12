@@ -4,22 +4,24 @@
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
         <title>Paint</title>
         
-        <link rel="stylesheet" type="text/css" href="../style.css" />
+        <link rel="stylesheet" type="text/css" href="/style.css" />
         
-        <script src="../socket.io/socket.io.js"></script>
+        <script src="/socket.io/socket.io.js"></script>
 
         
-		<script src="../tools.min.js"> </script>
-		<script src="../jscolor/jscolor.min.js"></script>
-		<script src="../paint.js"> </script>
-        <script src="../client_net.js"></script>		
+		<script src="/tools.min.js"> </script>
+		<script src="/jscolor/jscolor.min.js"></script>
+		<script src="/paint.js"> </script>		
         
 		<script> 
 			window.onload = function() {
-				
+				jscolor.dir = '/jscolor/';
 				var doc = new Paint.Painter();
+				doc.CreateToolbar("toolbar");
 				doc.CreateCanvas("paint_canvas");
 				doc.Connect("<%= room%>");
+				doc.setTool("Brush");
+				
 				/*
 				var c = document.getElementById("colpicker");
 				var s = document.getElementById("penWidth");
@@ -41,7 +43,9 @@
 		<div id = "canvas"></div>
 		!-->
 		<h1> Paint - <%= room %></h1>
-		<div id="paint_canvas"> </div>
-		
+		<div id="container"> 
+			<div id="toolbar"> </div>
+			<div id="paint_canvas"> </div>
+		</div>
     </body>
 </html>

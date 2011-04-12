@@ -42,14 +42,28 @@ paint.Document = function() {
 	
 }
 
-var Room = function(url) {
+var Room = function(url, rooms) {
     var text;
     
     var members = [];
  	var doc = new paint.Document();   
-    var max_members = 10;
+    var max_members = 255;
+    var timeout_time = 1000 * 60 * 5; 
+    var timeout;
+    var timeout_func = function() {
+    	for (var c in members) {
+    		members[c].Disconnect("The room has timed out.");
+    	}
+    	delete rooms[url];
+    };
+    var extend_time = function() {
+    	clearTimeout(timeout);
+    	timeout = setTimeout(timeout_func, timeout_time);
+    }
+    extend_time();
     
     doc.DoCommand({cmd: 'new_layer', params: {}});
+    
     
     // Return the number of places left in the room.
     this.getRemainingSpace = function() {
@@ -67,12 +81,25 @@ var Room = function(url) {
         new Packet().newMember(client).broadcastToRoom(client.listener, this);
         var p = new Packet().acceptJoin(newroom).Set('history', doc.getHistory()).Send(client);
         members.push(client);
+        extend_time();
         client.data.room = this;
         return true;
     };
     
+    this.removeClient = function(client) {
+    	var newmembers = [];
+    	for (var i=0;i<members.length;i++) {
+    		if (members[i] !== client) {
+    			newmembers.push(members[i]);
+    		}
+    	}
+    	members = newmembers;
+    	console.log(members);
+    }
+    
     this.DoCommand = function(command) {
     	doc.DoCommand(command);
+    	extend_time();
     }
     
     this.getMembers = function() {
@@ -94,14 +121,23 @@ this.Server = function(app) {
             if (reason) {
                 new Packet().Reject(reason, room).Send(client);
             }
+        	if (client.data && client.data.room) {
+        		client.data.room.removeClient(client);
+        	}
             client.connected = false;
-            client.on('message',undefined); //no clue if this works.
+            client.on('message',function(){}); //no clue if this works.
         };
         
         //Inline Client class!
         client.data = {
             room: null,
         };
+        
+        client.on('disconnect', function() {
+        	if (client.data && client.data.room) {
+        		client.data.room.removeClient(client);
+        	}
+        });
         
         client.on('message', function(data) {
             if (!client.connected) {
@@ -117,7 +153,7 @@ this.Server = function(app) {
                 
                 if (!(data.connect.room in rooms)) {
                 	 //Create a new room if needed exists
-                    room = new Room(data.connect.room);
+                    room = new Room(data.connect.room, rooms);
                     rooms[data.connect.room] = room;
                     room.addMember(client, true);
                 }

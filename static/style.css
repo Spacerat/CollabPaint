@@ -3,13 +3,18 @@ body {
 	margin: 0;
 }
 
-#paint_canvas {
-	position: relative;
+#container {
+
 	width: 90%;
-	height: 600px;
 	margin-left: auto;
 	margin-right: auto;
 	border: thin black solid;
+}
+
+#paint_canvas {
+	width: 100%;
+	height: 570px;
+	
 }
 
 canvas.canvas {
@@ -19,11 +24,21 @@ canvas.canvas {
 	top: 0;
 }
 
+#layers {
+	position: relative;
+	height: 100%;
+}
+
 #toolbar {
 	background: #FFFFFF;
 	position: relative;
 	border: thin black solid;
-	
+	height: 30px;
 	z-index: 2;
 }
 
+.splitter {
+	border: thin gray solid;
+	margin-left: 1em;
+	margin-right: 1em;
+}
