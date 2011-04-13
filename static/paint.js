@@ -123,6 +123,7 @@ Paint.tools.Line = function(data) {
 	
 	this.Render = function(layer) {
 		var ctx = layer.canvasElm.getContext("2d");
+		if (!(pos && pos2)) return;
 		ctx.beginPath();
 		ctx.moveTo(pos.x, pos.y);
 		ctx.lineTo(pos2.x, pos2.y);
