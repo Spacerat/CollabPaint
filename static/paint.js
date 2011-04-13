@@ -48,11 +48,7 @@ Paint.tools.Brush = function(data) {
 		pos = points[0];
 	}
 	var lineWidth = data.lineWidth || Paint.settings.Brush.size.getValue();
-	var strokeStyle = data.strokeStyle;
-	if (!strokeStyle) {
-		 var rgb = Paint.settings.globals.colour.rgb;
-		 strokeStyle = "rgba("+(rgb[0]*255.0)+","+(rgb[1]*255.0)+","+(rgb[2]*255.0)+","+(Paint.settings.globals.opacity.getValue()/255.0)+")";
-	}
+	var strokeStyle = data.strokeStyle || Paint.settings.globals.getArgb();
 	
 	this.Render = function(layer) {
 		var ctx = layer.canvasElm.getContext("2d");
@@ -114,6 +110,51 @@ Paint.tools.Brush.UI = function() {
 		,this.size
 		//,new Paint.ui.label("Shadow:", "strong")
 		//,this.shadow
+	];
+	this.cursor = "crosshair";
+};
+
+Paint.tools.Line = function(data) {
+	this.name = "Line";
+	var pos = data.pos;
+	var pos2 = data.pos2;
+	var lineWidth = data.lineWidth || Paint.settings.Line.size.getValue();
+	var strokeStyle = data.strokeStyle || Paint.settings.globals.getArgb();
+	
+	this.Render = function(layer) {
+		var ctx = layer.canvasElm.getContext("2d");
+		ctx.beginPath();
+		ctx.moveTo(pos.x, pos.y);
+		ctx.lineTo(pos2.x, pos2.y);
+		ctx.closePath();
+		ctx.lineCap = "square";
+		ctx.lineWidth = lineWidth;
+		ctx.strokeStyle = strokeStyle;
+		ctx.stroke();
+	}
+	
+	this.MouseMove = function(pos, layer) {
+		if (!pos) return;
+		pos2 = pos;
+		layer.Clear();
+		this.Render(layer);
+	}
+	
+	this.getData = function() {
+		return {
+			pos: pos,
+			pos2: pos2,
+			lineWidth: lineWidth,
+			strokeStyle: strokeStyle
+		};
+	}	
+};
+
+Paint.tools.Line.UI = function() {
+	this.size = new Paint.ui.slider(1, 100, 5);
+	this.elements = [
+		new Paint.ui.label("Size:", "strong")
+		,this.size
 	];
 	this.cursor = "crosshair";
 };
@@ -192,12 +233,16 @@ Paint.Toolbar = function(div_id, painter) {
 	//Set up the global tools section
 	var cpicker = document.createElement('input');
 	Paint.settings.globals.colour = new jscolor.color(cpicker, {});
-	Paint.settings.globals.colour.fromString("FF0000");
+	Paint.settings.globals.colour.fromString("00F");
 	settingsElm.appendChild(cpicker);
 	
 	settingsElm.appendChild(new Paint.ui.label("Opacity: ").elm);
 	Paint.settings.globals.opacity = new Paint.ui.slider(0, 255, 255);
 	settingsElm.appendChild(Paint.settings.globals.opacity.elm);
+	Paint.settings.globals.getArgb = function() {
+		 var rgb = Paint.settings.globals.colour.rgb;
+		 return "rgba("+(rgb[0]*255.0)+","+(rgb[1]*255.0)+","+(rgb[2]*255.0)+","+(Paint.settings.globals.opacity.getValue()/255.0)+")";	
+	}
 	
 	//Set up the tool-specific-options section
 	this.setTool = function(toolname) {
