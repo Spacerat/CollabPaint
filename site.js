@@ -39,7 +39,8 @@ app.get('/', function(req, res) {
 		}  
 	}
 	res.render('index', {
-		pagetitle: "CollabPaint",
+		sitetitle: "CollabPaint",
+		pagetitle: "",
 		head: "",
 		rooms: rooms
 	});
@@ -56,8 +57,8 @@ app.get('/paint/:id', function(req, res) {
 	
 	var head = painthead({room: roomname});
     res.render('paint', {
-    //	//head: head,
-    	pagetitle: "CollabPaint - "+roomname,
+    	pagetitle: roomname,
+    	sitetitle: "CollabPaint",
     	head: head
     });
 });
