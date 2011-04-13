@@ -128,7 +128,8 @@ Paint.tools.Line = function(data) {
 		ctx.moveTo(pos.x, pos.y);
 		ctx.lineTo(pos2.x, pos2.y);
 		ctx.closePath();
-		ctx.lineCap = "square";
+		ctx.lineCap = "butt";
+		ctx.lineJoin = "miter";
 		ctx.lineWidth = lineWidth;
 		ctx.strokeStyle = strokeStyle;
 		ctx.stroke();
