@@ -1,4 +1,5 @@
 
+//Console.log fix
 try {
 	(function() {var a = console.log;})();
 }
@@ -13,8 +14,6 @@ catch (e) {
 }
 
 
-
-
 //Namespaces
 Paint = {
 	tools: {}, 
@@ -24,6 +23,7 @@ Paint = {
 	}
 };
 
+//Classes
 Paint.tools.Pointer = function(data) {
 
 }
@@ -157,42 +157,51 @@ Paint.ui.splitter = function() {
 
 Paint.Toolbar = function(div_id, painter) {
 	var divElm = document.getElementById(div_id);
-	var toolsElm = document.createElement("div");
-	var settingsElm = document.createElement("div");
-	var toolSettingsElm = document.createElement("div");
-	toolsElm.style.display = 'inline';
-	settingsElm.style.display = 'inline';
-	toolSettingsElm.style.display = 'inline';
-	
+	var fileElm = document.createElement("span");
+	var toolsElm = document.createElement("select");
+	var settingsElm = document.createElement("span");
+	var toolSettingsElm = document.createElement("span");
+
+	//Add the sections
+	divElm.appendChild(fileElm);
+	divElm.appendChild(new Paint.ui.splitter().elm);
 	divElm.appendChild(toolsElm);
 	divElm.appendChild(new Paint.ui.splitter().elm);
 	divElm.appendChild(settingsElm);
 	divElm.appendChild(new Paint.ui.splitter().elm)
 	divElm.appendChild(toolSettingsElm);
 	
+	//Set up the 'file menu'
+	(function() {
+		var save = document.createElement("button");
+		save.innerHTML = '<img src="/disk.png" alt="" /><span>Save</span>';
+		save.onclick = function() {
+			painter.Save();
+		}
+		fileElm.appendChild(save);
+	})();
+	
+	//Set up the tool menu section
+	for (var b in Paint.tools) {
+		toolsElm.add(new Option(b),null);
+	}
+	toolsElm.onchange = function(evt){
+		painter.setTool(this.value);
+	}
+
+	//Set up the global tools section
 	var cpicker = document.createElement('input');
 	Paint.settings.globals.colour = new jscolor.color(cpicker, {});
 	Paint.settings.globals.colour.fromString("FF0000");
 	settingsElm.appendChild(cpicker);
 	
-	settingsElm.appendChild(new Paint.ui.label("Opacity").elm);
+	settingsElm.appendChild(new Paint.ui.label("Opacity: ").elm);
 	Paint.settings.globals.opacity = new Paint.ui.slider(0, 255, 255);
 	settingsElm.appendChild(Paint.settings.globals.opacity.elm);
 	
-	
-	for (var b in Paint.tools) {
-		var toolElm = document.createElement("button");
-		toolElm.innerHTML = b;
-		toolElm.name = b;
-		toolsElm.appendChild(toolElm);
-		toolElm.onclick = function() {
-			painter.setTool(this.name);
-			
-
-		}
-	}
-	
+	//Set up the tool-specific-options section
 	this.setTool = function(toolname) {
+		toolsElm.value = toolname;
 		toolSettingsElm.innerHTML = "";
 		if (!Paint.settings[toolname]) {
 			Paint.settings[toolname] = new Paint.tools[toolname].UI();
@@ -202,7 +211,7 @@ Paint.Toolbar = function(div_id, painter) {
 				toolSettingsElm.appendChild(Paint.settings[toolname].elements[i].elm);
 			}
 		}
-		document.body.style.cursor = Paint.settings[toolname].cursor || "auto";
+		painter.setCursor(Paint.settings[toolname].cursor || "auto");
 	}
 }
 
@@ -305,7 +314,7 @@ Paint.Painter = function() {
 						that.ProcessCommand(msg, true,  socket);
 						break;
 					case 'reject':
-						alert(msg.reason);
+						alert("You have been rejected from the room: "+msg.reason);
 						break;
 					default: 
 						//console.log("Unknown message", msgname, msg);
@@ -355,6 +364,15 @@ Paint.Painter = function() {
 	this.setTool = function(toolname) {
 		selected_tool = toolname;
 		toolbar.setTool(toolname);
+	}
+	
+	this.setCursor = function(curs) {
+		canvas.getTempLayer().canvasElm.style.cursor = curs;
+	}
+	
+	this.Save = function() {
+		//TODO: Save all layers.
+		window.open(current_layer.canvasElm.toDataURL());
 	}
 }
 

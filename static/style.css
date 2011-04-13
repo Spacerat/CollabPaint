@@ -1,11 +1,23 @@
 
+/* Website */
 body {
 	margin: 0;
 	font-family: sans;
+	background-color: #CCD;
 }
 
 h1 {
 	margin-left: 1em;
+	text-decoration: underline;
+}
+
+.text_container {
+	background-color: white;
+	width: 95%;
+	margin-left: auto;
+	margin-right: auto;
+	border: thin black solid;
+	padding: 1em;
 }
 
 #paint_container {
@@ -16,18 +28,17 @@ h1 {
 	border: thin black solid;
 }
 
-.text_container {
+/* Canvas */
 
-	width: 95%;
-	margin-left: auto;
-	margin-right: auto;
-	border: thin black solid;
-	padding: 1em;
+button > img {
+	padding-right: 0.5em;
+	vertical-align: bottom;
 }
 
 #paint_canvas {
 	width: 100%;
 	height: 570px;
+	background-color: white;
 	
 }
 
@@ -44,11 +55,11 @@ canvas.canvas {
 }
 
 #toolbar {
-	background: #FFFFFF;
+	background: #EEF;
 	position: relative;
-	border: thin black solid;
-	height: 30px;
+	border-bottom: thin black solid;
 	z-index: 2;
+	padding-left: 1em;
 }
 
 .splitter {

@@ -94,7 +94,6 @@ var Room = function(url, rooms) {
     		}
     	}
     	members = newmembers;
-    	console.log(members);
     }
     
     this.DoCommand = function(command) {
