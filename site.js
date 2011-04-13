@@ -31,31 +31,34 @@ app.configure('production', function(){
 ////
 
 app.get('/', function(req, res) {
-	var allrooms = paintserver.getRooms();
-	var rooms = {};
-	for (var i in allrooms) {
-		if (i.indexOf("hidden") !== 0) {
-			rooms[i] = allrooms[i];
-		}  
-	}
+	var head = templater.render(fs.readFileSync('views/index_head.html').toString());
 	res.render('index', {
 		sitetitle: "CollabPaint",
 		pagetitle: "",
-		head: "",
-		rooms: rooms
+		head: head
 	});
 });
 
-var painthead = templater.compile(fs.readFileSync('views/paint_head.html').toString());
+app.get('/rooms', function(req, res) {
+	var accept = req.header('Accept');
+	if (accept.indexOf('json') != -1 || accept.indexOf('javascript') != -1) {
+		res.send(JSON.stringify(paintserver.getPublicRooms()));
+	}
+	else {
+		res.partial('room_list', {rooms: paintserver.getPublicRooms()});
+	}
+});
+
+
 
 //Index, containing the collab box.
 app.get('/paint/:id', function(req, res) {
 
 	var roomname = req.params.id;
-	//var head = express.partial('paint_head', {locals: {room: roomname}});
-	//res.partial('paint');
-	
-	var head = painthead({room: roomname});
+
+	//var painthead = templater.compile(fs.readFileSync('views/paint_head.html').toString());
+	//var head = painthead({room: roomname});
+	var head = templater.render(fs.readFileSync('views/paint_head.html').toString(), {locals: {room: roomname}});
     res.render('paint', {
     	pagetitle: roomname,
     	sitetitle: "CollabPaint",

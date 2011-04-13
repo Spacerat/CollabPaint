@@ -43,8 +43,9 @@ paint.Document = function() {
 }
 
 var Room = function(url, rooms) {
-    var text;
-    
+	var chat = [];
+	
+
     var members = [];
  	var doc = new paint.Document();   
     var max_members = 255;
@@ -56,15 +57,22 @@ var Room = function(url, rooms) {
     	}
     	delete rooms[url];
     };
-    var extend_time = function() {
+    var extend_time = function(time) {
+    	time = time || timeout_time;
     	clearTimeout(timeout);
-    	timeout = setTimeout(timeout_func, timeout_time);
+    	timeout = setTimeout(timeout_func, time);
     }
+    
+    this.member_count = 0;
+    
     extend_time();
     
     doc.DoCommand({cmd: 'new_layer', params: {}});
     
-    
+ 	this.Chat = function(client, text) {
+ 		
+ 	}
+	   
     // Return the number of places left in the room.
     this.getRemainingSpace = function() {
         return max_members - members.length;
@@ -83,6 +91,7 @@ var Room = function(url, rooms) {
         members.push(client);
         extend_time();
         client.data.room = this;
+        this.member_count = members.length;
         return true;
     };
     
@@ -94,6 +103,10 @@ var Room = function(url, rooms) {
     		}
     	}
     	members = newmembers;
+    	this.member_count = members.length;
+    	if (members.length === 0) {
+    		extend_time(1000 * 60 * 5);
+    	}
     }
     
     this.DoCommand = function(command) {
@@ -116,6 +129,16 @@ this.Server = function(app) {
     
     
     this.getRooms = function() {return rooms;};
+    
+    this.getPublicRooms = function(list) {
+		var pubrooms = {};
+		for (var i in rooms) {
+			if (i.indexOf("hidden") !== 0) {
+				pubrooms[i] = rooms[i];
+			}  
+		}
+		return pubrooms;
+    }
     
     socket.on('connection', function(client) {
     

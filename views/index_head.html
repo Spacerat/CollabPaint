@@ -1,0 +1,37 @@
+<script src="/jquery-1.5.2.min.js"></script>
+<script>
+	var updateRooms = function(cb) {
+		$('#rooms').load('/rooms', cb);
+	}
+	
+	
+	var updateNewRoomLink = function() {
+		var txt = $('#newroomname').val();
+		txt = txt.replace(/\\/g,"");
+		txt = encodeURIComponent(txt);
+		if (txt) {
+			if ($('#newroomhidden:checked').val()) {
+				txt = 'hidden_'+txt;
+			}
+			txt = '/paint/' + txt;
+		}
+		
+		$('#newroomlink').text(txt);
+		$('#newroomlink').attr('href',txt);
+		$('#newroomlink').attr('title', "Go to room: "+$('#newroomhidden').val());
+	}
+	$(function() {
+		$('#newroomname').keyup(updateNewRoomLink);
+		$('#newroomname').change(updateNewRoomLink);
+		$('#newroomhidden').change(updateNewRoomLink);
+		$('#newroomform').submit(function() {
+			var url = $('#newroomlink').attr('href');
+			if (url) {
+				window.open(url);
+			}
+		});
+		var nrn = document.getElementById('newroomname');
+		updateNewRoomLink();
+		updateRooms();
+	});
+</script>

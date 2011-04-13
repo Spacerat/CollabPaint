@@ -1,0 +1,5 @@
+
+<% for(var i in rooms) {%>
+	<li><a href="/paint/<%= i %>"><%= i %></a> (<%= rooms[i].member_count %>)</li>
+<% } %>
+
