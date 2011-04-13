@@ -48,7 +48,7 @@ var Room = function(url, rooms) {
     var members = [];
  	var doc = new paint.Document();   
     var max_members = 255;
-    var timeout_time = 1000 * 60 * 5; 
+    var timeout_time = 1000 * 60 * 60; 
     var timeout;
     var timeout_func = function() {
     	for (var c in members) {
