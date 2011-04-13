@@ -1,0 +1,24 @@
+<script src="/socket.io/socket.io.js"></script>
+
+
+<script src="/tools.min.js"> </script>
+<script src="/jscolor/jscolor.min.js"></script>
+<script src="/paint.js"> </script>		
+
+<script> 
+	window.onload = function() {
+		jscolor.dir = '/jscolor/';
+		var doc = new Paint.Painter();
+		doc.CreateToolbar("toolbar");
+		doc.CreateCanvas("paint_canvas");
+		doc.Connect("<%= room%>");
+		doc.setTool("Brush");
+		
+		/*
+		var c = document.getElementById("colpicker");
+		var s = document.getElementById("penWidth");
+		paint.getColour = function() {return "#"+c.color.toString();}
+		paint.getPenWidth = function() {return parseInt(s.value,10);}
+		*/
+	}
+</script>	

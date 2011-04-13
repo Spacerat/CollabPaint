@@ -1,0 +1,12 @@
+<div class="text_container"> 
+	<p> Welcome to CollabPaint. If you would like to create a room, simply direct your browser to it, e.g: <a href="/paint/myroom">/paint/myroom</a>.
+	You can call your room whatever you want. Anyone who knows the URL can join it. Rooms die after five minutes of no activity.</p>
+	<p> Here is a list of public rooms.</p>
+	
+	<ul>
+	<% for(var i in rooms) {%>
+		<li><a href="/paint/<%= i %>"><%= i %></a></li>
+	<% } %>
+	</ul>
+	<p> If you do not wish for your room to appear in this list, simply prepend "hidden" to the name, e.g: <a href="/paint/hiddenplace">/paint/hiddenplace</a></p>
+</div>

@@ -115,6 +115,9 @@ this.Server = function(app) {
     var socket = io.listen(app);
     var rooms = {};
     
+    
+    this.getRooms = function() {return rooms;};
+    
     socket.on('connection', function(client) {
     
         client.Disconnect = function(reason, room) {

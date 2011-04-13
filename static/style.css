@@ -1,14 +1,28 @@
 
 body {
 	margin: 0;
+	font-family: sans;
 }
 
-#container {
+h1 {
+	margin-left: 1em;
+}
 
-	width: 90%;
+#paint_container {
+
+	width: 95%;
 	margin-left: auto;
 	margin-right: auto;
 	border: thin black solid;
+}
+
+.text_container {
+
+	width: 95%;
+	margin-left: auto;
+	margin-right: auto;
+	border: thin black solid;
+	padding: 1em;
 }
 
 #paint_canvas {
