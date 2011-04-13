@@ -433,7 +433,7 @@ Paint.Canvas = function(object_id, painter) {
 		layersElm.id = 'layers';
 		containerElm.appendChild(layersElm);
 		temp_layer.Attach(layersElm);
-		
+		containerElm.style.height = (window.innerHeight-tools.findAbsolutePosition(containerElm).y - 10)+"px";
 		var downEvent = function(evt) {
 			//evt.preventDefault();
 			var pos = tools.getRelativeMousePos(evt, containerElm);
@@ -451,7 +451,9 @@ Paint.Canvas = function(object_id, painter) {
 		};
 		
 		var resizetimer;
-		window.onresize = function() {
+		window.onresize = function(evt) {
+			containerElm.style.height = (window.innerHeight-tools.findAbsolutePosition(containerElm).y - 10)+"px";
+			
 			clearTimeout(resizetimer);
 			resizetimer = setTimeout(function() {
 				temp_layer.canvasElm.width = containerElm.offsetWidth;
