@@ -4,13 +4,13 @@ tools = new function() {
 
     this.randRange = function(minv, maxv) { 
         return Math.random()*(maxv - minv) + minv;
-    }
+    };
     
     this.randRangeInt = function(minv, maxv) {
     	return Math.floor(this.randRange(minv, maxv+1))
-    }
+    };
 
-	function findAbsolutePosition(obj) {
+	this.findAbsolutePosition = function(obj) {
 		var curleft = curtop = 0;
 		if (obj.offsetParent) {
 			do {
@@ -19,7 +19,7 @@ tools = new function() {
 			} while (obj = obj.offsetParent);
 		}
 		return {x: curleft, y:curtop};
-	}
+	};
 
 	//Given a mouse event, find the mouse position relative to an element.
 	this.getRelativeMousePos = function(e, element) {
@@ -33,15 +33,15 @@ tools = new function() {
 		  x = e.clientX + document.body.scrollLeft + document.documentElement.scrollLeft; 
 		  y = e.clientY + document.body.scrollTop + document.documentElement.scrollTop; 
 		} 
-		var abspos = findAbsolutePosition(element);
+		var abspos = this.findAbsolutePosition(element);
 		x -= abspos.x;
 		y -= abspos.y
 		return {x: x, y:y};
-	}
+	};
 	
 
 	this.Choose = function(list) {
 		return list[this.randRangeInt(0, list.length-1)];
-	}
+	};
 
 }();
