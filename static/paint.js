@@ -309,7 +309,7 @@ Paint.Painter = function() {
 	var MozillaFix = function() {
 		$('#chat').height($('#chatcont').height());
 		if ($.browser.mozilla) {
-			$('#chat').width(document.body.clientWidth - $('#rightgrabber').position().left - 13);
+			$('#chat').width(Math.max(document.body.clientWidth - $('#rightgrabber').position().left - 13,50));
 		}
 	}
 	
@@ -377,7 +377,12 @@ Paint.Painter = function() {
 		
 		$('#chat').append(function() {
 			var txt = msg.text;
-			return '<span class="chatname">'+msg.sender.name+":</span> " + txt + "<br/>";
+			if (msg.sender) {
+				return '<span class="chatname">'+msg.sender.name+":</span> " + txt + "<br/>";
+			}
+			else {
+				return txt +"<br/>";
+			}
 		});
 		MozillaFix();
 		elm.scrollTop = elm.scrollHeight;
@@ -405,7 +410,6 @@ Paint.Painter = function() {
 	
 	this.Connect = function(roomname) {
 		socket = new io.Socket(null);
-		
 		socket.connect();
 		socket.on('connect', function() {
 			socket.send({'connect': {
@@ -437,13 +441,8 @@ Paint.Painter = function() {
 							$("#usercount").html(msg + " users");
 						}
 						break;
-					//TODO: handle these somehow?
-					case 'new_room':
-						break;
 					case 'accept_join':
 						$('#yourname').text("Your name: "+msg.info.name);
-						break;
-					case 'new_member':
 						break;
 					case 'chat':
 						that.ProcessChat(msg);
@@ -452,6 +451,19 @@ Paint.Painter = function() {
 						for (var i = 0;i < msg.length; i++) {
 							that.ProcessChat(msg[i]);
 						}
+						break;
+					case 'name_change':
+						if (msg.you === true) {
+							$('#yourname').text("Your name: "+msg.client.name);
+						}
+						break;
+					//TODO: handle these somehow?
+					case 'new_room':
+						break;
+					case 'members':
+						break
+
+					case 'new_member':
 						break;
 					default: 
 						console.log("Unknown message", msgname, msg);

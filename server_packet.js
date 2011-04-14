@@ -36,6 +36,15 @@ this.Packet = function() {
         return this;
     };
 
+	this.nameChange = function(client, oldname, you) {
+		data.name_change = {
+			client: client.info,
+			oldname: oldname,
+			you: you
+		}
+		return this;
+	}
+
 	this.Chat = function(client, msg) {
 		data.chat = {
 			sender: client.info,

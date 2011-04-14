@@ -9,6 +9,8 @@ var Packet = require('./server_packet').Packet;
     anyone_join: bool,   //false
 }*/
 
+var ServerName = "CollabBox";
+
 var paint = {};
 
 paint.Layer = function(name) {
@@ -70,10 +72,12 @@ var Room = function(url, rooms) {
     doc.DoCommand({cmd: 'new_layer', params: {}});
     
  	this.Chat = function(client, text) {
+
  		chat.push({
 			sender: client.info,
 			text: text
 		});
+		new Packet().Chat(client, text).broadcastToRoom(client.listener, this);
  	}
 	   
     // Return the number of places left in the room.
@@ -82,6 +86,7 @@ var Room = function(url, rooms) {
     };
     
     this.clientByName = function(name) {
+    	if (name === ServerName) return {};
         for (var i = 0;i < members.length; i++) {
         	if (name === members[i].info.name) {
         		return true;
@@ -164,7 +169,12 @@ this.Server = function(app) {
     }
     
     socket.on('connection', function(client) {
-    
+    	var SRVclient = { 
+    		info: {
+        		name: '<span style="color: red">'+ServerName+'</span>'
+        	},
+        	listener: client.listener
+        }; 
         client.Disconnect = function(reason, room) {
       
             if (reason) {
@@ -184,9 +194,9 @@ this.Server = function(app) {
             room: null,
         };
         client.info = {
-        	name: "Anon"
+        	name: "Anon",
+        	id: client.listener.sessionId
         }
-        
         
         client.on('disconnect', function() {
         	if (client.data && client.data.room) {
@@ -196,6 +206,7 @@ this.Server = function(app) {
         });
         
         client.on('message', function(data) {
+
             if (!client.connected) {
                 return;
             }
@@ -218,6 +229,8 @@ this.Server = function(app) {
 		            room = rooms[data.connect.room];
 		            room.addMember(client, false);
                 }
+                
+                room.Chat(SRVclient,client.info.name+" has joined");
             }
             if ('command' in data) {
             	//TODO: Validate commands.
@@ -229,16 +242,40 @@ this.Server = function(app) {
             if ('chat' in data) {
             	//TODO: Check that msg is a string.
             	var msg = data.chat;
-             	if (msg.length > 600) {
-            		msg = msg.substr(0, 597)+"...";
-            	}           	
-            	var htmlEntities = function(str) {
+            	var room = client.data.room;
+            	if (!room) return;
+            	
+	        	var htmlEntities = function(str) {
 					return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 				};
-				msg = htmlEntities(msg);
 
-            	client.data.room.Chat(client, msg);
-            	new Packet().Chat(client, msg).broadcastToRoom(client.listener, client.data.room);
+            	if (msg.indexOf('/name')===0) {
+            		var name = msg.substring(msg.indexOf(" ")+1);
+            		if (name.length > 20) {
+            			new Packet().Chat(SRVclient, "Name too long").Send(client);
+            		}
+            		else if (client.data.room.clientByName(name)!==null) {
+            			new Packet().Chat(SRVclient, "Name already taken").Send(client);
+               		}
+               		else {
+               			var old = client.info.name;
+               			client.info.name = htmlEntities(name);
+               			new Packet().nameChange(client, old, false).broadcastToRoom(client.listener, room, client);
+               			new Packet().nameChange(client, old, true).Send(client);
+               			room.Chat(SRVclient,"* <em>"+old+"</em> has changed name to <em>"+client.info.name+'</em>');
+               		}
+            	}
+            	else {
+            	
+		         	if (msg.length > 600) {
+		        		msg = msg.substr(0, 597)+"...";
+		        	}           	
+
+					msg = htmlEntities(msg);
+
+		        	room.Chat(client, msg);
+		        	
+            	}
             }
         });
             
