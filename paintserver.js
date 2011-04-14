@@ -18,7 +18,7 @@ paint.Layer = function(name) {
 paint.Document = function() {
 	var history = [];
 	var layers = [];
-	
+
 	this.DoCommand = function(command) {
 
 		switch (command.cmd) {
@@ -70,7 +70,10 @@ var Room = function(url, rooms) {
     doc.DoCommand({cmd: 'new_layer', params: {}});
     
  	this.Chat = function(client, text) {
- 		
+ 		chat.push({
+			sender: client.info,
+			text: text
+		});
  	}
 	   
     // Return the number of places left in the room.
@@ -78,20 +81,40 @@ var Room = function(url, rooms) {
         return max_members - members.length;
     };
     
+    this.clientByName = function(name) {
+        for (var i = 0;i < members.length; i++) {
+        	if (name === members[i].info.name) {
+        		return true;
+        	}
+        }
+        return null;
+    }
+    
     //Add a member to this room.
     this.addMember = function(client, newroom) {
-        var i;
         if (this.getRemainingSpace() === 0) {
             client.Disconnect("Room has no free spaces",this);
             return false;
         }
         //Broadcast info about this new member.
-        new Packet().newMember(client).broadcastToRoom(client.listener, this);
-        var p = new Packet().acceptJoin(newroom).Set('history', doc.getHistory()).Send(client);
-        members.push(client);
-        extend_time();
+        this.member_count = members.length + 1;
         client.data.room = this;
-        this.member_count = members.length;
+        
+        var t = 1;
+        var newname = client.info.name;
+		while (this.clientByName(newname) !== null) {
+			newname = client.info.name + t;
+			t+=1;
+		}
+		client.info.name = newname;
+        
+        new Packet().newMember(client, this).broadcastToRoom(client.listener, this);
+        var p = new Packet().acceptJoin(client, newroom).Set('history', doc.getHistory()).chatHistory(chat).Send(client);
+        members.push(client);
+        
+        extend_time();
+        
+        
         return true;
     };
     
@@ -143,12 +166,15 @@ this.Server = function(app) {
     socket.on('connection', function(client) {
     
         client.Disconnect = function(reason, room) {
+      
             if (reason) {
                 new Packet().Reject(reason, room).Send(client);
             }
         	if (client.data && client.data.room) {
         		client.data.room.removeClient(client);
         	}
+        	new Packet().memberLeft(client,  client.data.room, reason).broadcastToRoom(client.listener, client.data.room);
+        	
             client.connected = false;
             client.on('message',function(){}); //no clue if this works.
         };
@@ -157,11 +183,16 @@ this.Server = function(app) {
         client.data = {
             room: null,
         };
+        client.info = {
+        	name: "Anon"
+        }
+        
         
         client.on('disconnect', function() {
         	if (client.data && client.data.room) {
         		client.data.room.removeClient(client);
         	}
+        	new Packet().memberLeft(client, client.data.room, "disconnected").broadcastToRoom(client.listener, client.data.room);
         });
         
         client.on('message', function(data) {
@@ -189,10 +220,25 @@ this.Server = function(app) {
                 }
             }
             if ('command' in data) {
+            	//TODO: Validate commands.
             	var cmd = data.command;
             	var room = client.data.room;
             	room.DoCommand(cmd);
             	new Packet().Set('command', cmd).broadcastToRoom(client.listener, room);
+            }
+            if ('chat' in data) {
+            	//TODO: Check that msg is a string.
+            	var msg = data.chat;
+             	if (msg.length > 600) {
+            		msg = msg.substr(0, 597)+"...";
+            	}           	
+            	var htmlEntities = function(str) {
+					return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+				};
+				msg = htmlEntities(msg);
+
+            	client.data.room.Chat(client, msg);
+            	new Packet().Chat(client, msg).broadcastToRoom(client.listener, client.data.room);
             }
         });
             

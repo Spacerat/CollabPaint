@@ -1,7 +1,9 @@
 
 //A set of handy, game independant classes and functions.
 tools = new function() {
-
+	this.htmlEntities = function(str) {
+		return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+	};
     this.randRange = function(minv, maxv) { 
         return Math.random()*(maxv - minv) + minv;
     };

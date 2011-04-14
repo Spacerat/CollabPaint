@@ -11,19 +11,43 @@ this.Packet = function() {
         data.reject.reason = reason;
         return this;
     };
+    
 
     //new_member, inform room members of a new member.
-    this.newMember = function(client) {
-        data.new_member = {};
+    this.newMember = function(client, room) {
+        data.new_member = client.info;
+        data.member_count = room.member_count;
+        return this;
+    };
+    
+    this.memberLeft = function(client, room, reason) {
+    	data.member_left = client.info;
+    	data.member_count = room.member_count;
+    	return this;
+    }
+
+    //accept_join, inform a client that their request to join has been accepted.
+    this.acceptJoin = function(client, is_newroom) {
+        data.accept_join = {
+        	info: client.info
+        };
+        data.new_room = is_newroom;
+        data.member_count = client.data.room.member_count;
         return this;
     };
 
-    //accept_join, inform a client that their request to join has been accepted.
-    this.acceptJoin = function(is_newroom) {
-        data.accept_join = true;
-        data.new_room = is_newroom;
-        return this;
-    };
+	this.Chat = function(client, msg) {
+		data.chat = {
+			sender: client.info,
+			text: msg
+		}
+		return this;
+	}
+	
+	this.chatHistory = function(history) {
+		data.chathistory = history;
+		return this;
+	}
 
 	this.Set = function(name, ndata) {
 		data[name] = ndata;

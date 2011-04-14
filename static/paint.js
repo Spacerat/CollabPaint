@@ -272,8 +272,8 @@ Paint.Layer = function(opts, id) {
 	var history = [];
 	this.Attach = function(parent) {
 		parent.appendChild(this.canvasElm);
-		this.canvasElm.width = parent.offsetWidth;
-		this.canvasElm.height = parent.offsetHeight;
+		//this.canvasElm.width = parent.offsetWidth;
+		//this.canvasElm.height = parent.offsetHeight;
 	}
 	this.Clear = function() {
 		this.canvasElm.getContext("2d").clearRect(0, 0, this.canvasElm.width, this.canvasElm.height);
@@ -281,6 +281,13 @@ Paint.Layer = function(opts, id) {
 	this.addHistory = function(command) {
 		history.push(command);
 	}
+	
+	this.Resize = function(w, h, painter) {
+		this.canvasElm.width = w;
+		this.canvasElm.height = h;
+		if (painter) this.RenderHistory(painter);
+	}
+	
 	this.RenderHistory = function(painter) {
 		for (var i=0;i<history.length;i++) {
 			painter.ProcessCommand(history[i]);
@@ -298,6 +305,13 @@ Paint.Painter = function() {
 	var socket;
 	var toolbar = null;
 	var last_sent_id;
+
+	var MozillaFix = function() {
+		$('#chat').height($('#chatcont').height());
+		if ($.browser.mozilla) {
+			$('#chat').width(document.body.clientWidth - $('#rightgrabber').position().left - 13);
+		}
+	}
 	
 	this.AddLayer = function(opts) {
 		if (!opts) opts = {};
@@ -317,6 +331,56 @@ Paint.Painter = function() {
 	
 	this.CreateToolbar = function(object_id) {
 		toolbar = new Paint.Toolbar(object_id, this);
+	};
+	
+	this.SetupChat = function() {
+		$('#chatform').submit(function() {
+			var txt = $('#chatinput').val();
+			$('#chatinput').val("");
+			if (!txt) return false;
+			socket.send({chat: txt});
+			return false;
+		});
+		
+		var dragging = false;
+		var dragoffset = 0;
+
+		window.addEventListener('mousemove', function(evt) {
+			if (dragging) {
+				$('#rightpanel').width(document.body.clientWidth - evt.pageX - 13 + dragoffset );
+				MozillaFix();
+			}
+		}, false);
+		window.addEventListener('mouseup', function(evt) {
+			dragging = false;
+		}, false);
+		$('#rightgrabber').mousedown(function(evt) {
+			var pos = tools.getRelativeMousePos(evt, document.getElementById("rightpanel"));
+			dragging = true;
+			dragoffset = pos.x;
+		});;
+		if ($.browser.mozilla) {
+			this.ProcessChat({
+				sender: {name: "Joseph Atkins-Turkish"},
+				text: "<span style='color: #800;'>Firefox user: I just thought I'd let you know how much effort I put in to making this stupid chat box usable for your browser. That is all.<span>"
+			});
+		}
+		$(window).resize(function(evt){
+			MozillaFix();
+		});
+	};
+
+	
+	this.ProcessChat = function(msg) {
+		var elm = document.getElementById("chat");
+		var doscroll = (elm.scrollTop === elm.scrollHeight);
+		
+		$('#chat').append(function() {
+			var txt = msg.text;
+			return '<span class="chatname">'+msg.sender.name+":</span> " + txt + "<br/>";
+		});
+		MozillaFix();
+		elm.scrollTop = elm.scrollHeight;
 	}
 	
 	this.ProcessCommand = function(command, is_new, socket) {
@@ -337,6 +401,7 @@ Paint.Painter = function() {
 				console.log("Unknown command", command);
 		}
 	}
+
 	
 	this.Connect = function(roomname) {
 		socket = new io.Socket(null);
@@ -363,8 +428,33 @@ Paint.Painter = function() {
 					case 'reject':
 						alert("You have been rejected from the room: "+msg.reason);
 						break;
+					case 'member_count':
+						//God damn you singular/plural.
+						if (msg === 1) {
+							$("#usercount").html(msg + " user&nbsp;");
+						}
+						else {
+							$("#usercount").html(msg + " users");
+						}
+						break;
+					//TODO: handle these somehow?
+					case 'new_room':
+						break;
+					case 'accept_join':
+						$('#yourname').text("Your name: "+msg.info.name);
+						break;
+					case 'new_member':
+						break;
+					case 'chat':
+						that.ProcessChat(msg);
+						break;
+					case 'chathistory':
+						for (var i = 0;i < msg.length; i++) {
+							that.ProcessChat(msg[i]);
+						}
+						break;
 					default: 
-						//console.log("Unknown message", msgname, msg);
+						console.log("Unknown message", msgname, msg);
 						break;
 				}
 			}
@@ -428,6 +518,8 @@ Paint.Canvas = function(object_id, painter) {
 	var layersElm;
 	var temp_layer = new Paint.Layer({name: "temp"});
 	var that = this;
+	var w = 1680;
+	var h = 1050;
 	
 	this.Init = function() {
 		containerElm = document.getElementById(object_id);
@@ -435,26 +527,34 @@ Paint.Canvas = function(object_id, painter) {
 		layersElm.id = 'layers';
 		containerElm.appendChild(layersElm);
 		temp_layer.Attach(layersElm);
-		containerElm.style.height = (window.innerHeight-tools.findAbsolutePosition(containerElm).y - 10)+"px";
+		temp_layer.Resize(w, h);
+		//containerElm.style.height = (window.innerHeight-tools.findAbsolutePosition(containerElm).y)+"px";
 		var downEvent = function(evt) {
 			//evt.preventDefault();
-			var pos = tools.getRelativeMousePos(evt, containerElm);
+			var pos = tools.getRelativeMousePos(evt, temp_layer.canvasElm);
+			pos.x += containerElm.scrollLeft;
+			pos.y += containerElm.scrollTop;
 			painter.MouseDown(pos);
 		};
 		var moveEvent = function(evt) {
 			//evt.preventDefault();
-			var pos = tools.getRelativeMousePos(evt, containerElm);
+			var pos = tools.getRelativeMousePos(evt, temp_layer.canvasElm);
+			pos.x += containerElm.scrollLeft;
+			pos.y += containerElm.scrollTop;
 			painter.MouseMove(pos);
 		};
 		var upEvent = function(evt) {
 			//evt.preventDefault();
-			var pos = tools.getRelativeMousePos(evt, containerElm);
+			var pos = tools.getRelativeMousePos(evt, temp_layer.canvasElm);
+			pos.x += containerElm.scrollLeft;
+			pos.y += containerElm.scrollTop;
 			painter.MouseUp(pos);
 		};
 		
 		var resizetimer;
 		window.onresize = function(evt) {
-			containerElm.style.height = (window.innerHeight-tools.findAbsolutePosition(containerElm).y - 10)+"px";
+			/*
+			containerElm.style.height = (window.innerHeight-tools.findAbsolutePosition(containerElm).y)+"px";
 			
 			clearTimeout(resizetimer);
 			resizetimer = setTimeout(function() {
@@ -467,15 +567,15 @@ Paint.Canvas = function(object_id, painter) {
 					layers[i].RenderHistory(painter);
 				}
 			}, 10);
+			*/
 		}
-		
 		if ('ontouchstart' in window) {
 			document.addEventListener("touchstart", downEvent, false);
 			document.body.addEventListener('touchmove',moveEvent , false);
 			document.body.addEventListener('touchend', upEvent, false);
 		}
 		else {
-			containerElm.addEventListener('mousedown', downEvent, false);
+			temp_layer.canvasElm.addEventListener('mousedown', downEvent, false);
 			window.addEventListener('mousemove',moveEvent , false);
 			window.addEventListener('mouseup', upEvent, false);
 		}
@@ -484,8 +584,7 @@ Paint.Canvas = function(object_id, painter) {
 	
 	this.AddLayer = function(layer) {
 		layersElm.appendChild(layer.canvasElm);
-		layer.canvasElm.width = containerElm.offsetWidth;
-		layer.canvasElm.height = containerElm.offsetHeight;
+		layer.Resize(w, h);
 		layer.Clear();
 		layersElm.removeChild(temp_layer.canvasElm);
 		temp_layer.Attach(layersElm);
