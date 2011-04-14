@@ -48,7 +48,7 @@ Paint.tools.Brush = function(data) {
 		pos = points[0];
 	}
 	var lineWidth = data.lineWidth || Paint.settings.Brush.size.getValue();
-	var strokeStyle = data.strokeStyle || Paint.settings.globals.getArgb();
+	var strokeStyle = data.strokeStyle || data.fgcol;
 	
 	this.Render = function(layer) {
 		var ctx = layer.canvasElm.getContext("2d");
@@ -119,7 +119,7 @@ Paint.tools.Line = function(data) {
 	var pos = data.pos;
 	var pos2 = data.pos2;
 	var lineWidth = data.lineWidth || Paint.settings.Line.size.getValue();
-	var strokeStyle = data.strokeStyle || Paint.settings.globals.getArgb();
+	var strokeStyle = data.strokeStyle || data.fgcol;
 	
 	this.Render = function(layer) {
 		var ctx = layer.canvasElm.getContext("2d");
@@ -151,7 +151,6 @@ Paint.tools.Line = function(data) {
 		};
 	}	
 };
-
 Paint.tools.Line.UI = function() {
 	this.size = new Paint.ui.slider(1, 100, 5);
 	this.elements = [
@@ -161,16 +160,34 @@ Paint.tools.Line.UI = function() {
 	this.cursor = "crosshair";
 };
 
-Paint.ui.colourPicker = function(label) {
-	var span = document.createElement("span");
-	span.innerHTML = '<strong>'+label+'</strong>';
-	var pickerElm = document.createElement('input');
-	span.appendChild(pickerElm);
-	var picker = new jscolor.color(pickerElm, {});
-	parent.appendChild(span);
-	this.getColour = function() {
-		return "#"+picker.color.toString();
+Paint.tools.Shape = function(data) {
+	this.name = "Shape";
+	var pos = data.pos;
+	var pos2 = data.pos2;
+	var strokeWidth = data.strokeWidth || Paint.settings.Shape.strokewidth.getValue();
+	var strokeStyle = data.StrokeStyle || bgcol;
+	var fillStyle = data.fillStyle || fgcol;
+	var type = data.type || Paint.settings.Shape.type.getType();
+}
+Paint.tools.Shape.UI = function() {
+	this.strokeWidth = new Paint.ui.slider(1, 100, 5);
+	this.elements = [
+		new Paint.ui.label("Outline size:", "strong")
+		,this.strokeWidth
+	];
+}
+
+Paint.ui.colourPicker = function(col) {
+	this.elm = document.createElement('input');
+	this.elm.style.width = "4em";
+	var picker = new jscolor.color(this.elm, {});
+	
+	picker.fromString(col);
+	this.getArgb = function() {
+		 var rgb = picker.rgb;
+		 return "rgba("+(rgb[0]*255.0)+","+(rgb[1]*255.0)+","+(rgb[2]*255.0)+","+(Paint.settings.globals.opacity.getValue()/255.0)+")";	
 	}
+	
 }
 
 Paint.ui.label = function(HTML, type) {
@@ -233,18 +250,18 @@ Paint.Toolbar = function(div_id, painter) {
 	}
 
 	//Set up the global tools section
-	var cpicker = document.createElement('input');
-	Paint.settings.globals.colour = new jscolor.color(cpicker, {});
-	Paint.settings.globals.colour.fromString("00F");
-	settingsElm.appendChild(cpicker);
+	var fgpicker = new Paint.ui.colourPicker("#00F");
+	Paint.settings.globals.fgcolour = fgpicker;
+	settingsElm.appendChild(fgpicker.elm);
+
+	var bgpicker = new Paint.ui.colourPicker("#FFF");
+	Paint.settings.globals.bgcolour = bgpicker;
+	settingsElm.appendChild(bgpicker.elm);
 	
 	settingsElm.appendChild(new Paint.ui.label("Opacity: ").elm);
 	Paint.settings.globals.opacity = new Paint.ui.slider(0, 255, 255);
 	settingsElm.appendChild(Paint.settings.globals.opacity.elm);
-	Paint.settings.globals.getArgb = function() {
-		 var rgb = Paint.settings.globals.colour.rgb;
-		 return "rgba("+(rgb[0]*255.0)+","+(rgb[1]*255.0)+","+(rgb[2]*255.0)+","+(Paint.settings.globals.opacity.getValue()/255.0)+")";	
-	}
+
 	
 	//Set up the tool-specific-options section
 	this.setTool = function(toolname) {
@@ -495,9 +512,17 @@ Paint.Painter = function() {
 		});
 	};
 	
-	this.MouseDown = function(pos) {
+	this.MouseDown = function(pos, button) {
 		if (!current_tool) {
-			current_tool = new Paint.tools[selected_tool]({pos: pos});
+			var fgcol, bgcol, tcol;
+			fgcol = Paint.settings.globals.fgcolour.getArgb();
+			bgcol = Paint.settings.globals.bgcolour.getArgb();
+			if (button === 2) {
+				tcol = fgcol;
+				fgcol = bgcol;
+				bgcol = tcol;
+			}
+			current_tool = new Paint.tools[selected_tool]({pos: pos, fgcol: fgcol, bgcol: bgcol});
 		}
 	}
 	
@@ -568,7 +593,7 @@ Paint.Canvas = function(object_id, painter) {
 			var pos = tools.getRelativeMousePos(evt, temp_layer.canvasElm);
 			pos.x += containerElm.scrollLeft;
 			pos.y += containerElm.scrollTop;
-			painter.MouseDown(pos);
+			painter.MouseDown(pos, evt.button);
 		};
 		var moveEvent = function(evt) {
 			//evt.preventDefault();
@@ -576,6 +601,7 @@ Paint.Canvas = function(object_id, painter) {
 			pos.x += containerElm.scrollLeft;
 			pos.y += containerElm.scrollTop;
 			painter.MouseMove(pos);
+			
 		};
 		var upEvent = function(evt) {
 			//evt.preventDefault();
@@ -584,7 +610,7 @@ Paint.Canvas = function(object_id, painter) {
 			pos.y += containerElm.scrollTop;
 			painter.MouseUp(pos);
 		};
-		
+		temp_layer.canvasElm.oncontextmenu = function() {return false;};
 		var resizetimer;
 		window.onresize = function(evt) {
 			/*
