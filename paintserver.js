@@ -114,8 +114,9 @@ var Room = function(url, rooms) {
 		client.info.name = newname;
         
         new Packet().newMember(client, this).broadcastToRoom(client.listener, this);
-        var p = new Packet().acceptJoin(client, newroom).Set('history', doc.getHistory()).chatHistory(chat).Send(client);
         members.push(client);
+        var p = new Packet().acceptJoin(client, newroom).Set('history', doc.getHistory()).chatHistory(chat).Send(client);
+        
         
         extend_time();
         
@@ -144,6 +145,13 @@ var Room = function(url, rooms) {
     
     this.getMembers = function() {
     	return members;
+    }
+    this.getMembersInfo = function() {
+    	var ret = [];
+    	for (var i = 0;i<members.length;i++) {
+    		ret.push(members[i].info);
+    	}
+    	return ret;
     }
 };
 
@@ -223,6 +231,7 @@ this.Server = function(app) {
                     room = new Room(data.connect.room, rooms);
                     rooms[data.connect.room] = room;
                     room.addMember(client, true);
+                    room.Chat(SRVclient,"Welcome to your new room! If you would like to change your name, simply type /name &lt;name&gt;");
                 }
                 else {
                 	//Otherwise connect to an existing room

@@ -17,12 +17,14 @@ this.Packet = function() {
     this.newMember = function(client, room) {
         data.new_member = client.info;
         data.member_count = room.member_count;
+        data.members = room.getMembersInfo();
         return this;
     };
     
     this.memberLeft = function(client, room, reason) {
     	data.member_left = client.info;
     	data.member_count = room.member_count;
+    	data.members = room.getMembersInfo();
     	return this;
     }
 
@@ -33,6 +35,7 @@ this.Packet = function() {
         };
         data.new_room = is_newroom;
         data.member_count = client.data.room.member_count;
+        data.members = client.data.room.getMembersInfo();
         return this;
     };
 
@@ -42,6 +45,7 @@ this.Packet = function() {
 			oldname: oldname,
 			you: you
 		}
+		data.members = client.data.room.getMembersInfo();
 		return this;
 	}
 

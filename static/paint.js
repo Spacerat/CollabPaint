@@ -368,6 +368,22 @@ Paint.Painter = function() {
 		$(window).resize(function(evt){
 			MozillaFix();
 		});
+		
+		var usc = $("#usercount");
+		var usrs = $('#users')
+		usrs.toggle();
+		usc.mouseover(function(evt) {
+
+			usrs.toggle('fast');
+		});
+		usc.mousemove(function(evt) {
+			var pos = usc.position();
+			//pos.top += usc.height();
+			usrs.offset(pos);
+		});
+		usrs.mouseleave(function(evt) {
+			usrs.toggle('fast');
+		});
 	};
 
 	
@@ -461,8 +477,14 @@ Paint.Painter = function() {
 					case 'new_room':
 						break;
 					case 'members':
-						break
-
+						var html="<ul>";
+						for (var i = 0;i < msg.length;i++) {
+							html+='<li>'+msg[i].name+'</li>';
+						}
+						html+="</ul>"
+						$('#users').html(html);
+						break;
+			
 					case 'new_member':
 						break;
 					default: 

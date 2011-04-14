@@ -5,7 +5,7 @@
 <script src="/paint.js"> </script>		
 <script src="/jquery-1.5.2.min.js"></script>
 <script> 
-	window.onload = function() {
+	$(function() {
 		jscolor.dir = '/jscolor/';
 		var doc = new Paint.Painter();
 		doc.CreateToolbar("toolbar");
@@ -20,5 +20,5 @@
 		paint.getColour = function() {return "#"+c.color.toString();}
 		paint.getPenWidth = function() {return parseInt(s.value,10);}
 		*/
-	}
+	});
 </script>	
