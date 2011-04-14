@@ -103,10 +103,10 @@ Paint.tools.Brush = function(data) {
 	}
 }
 Paint.tools.Brush.UI = function() {
-	this.size = new Paint.ui.slider(1, 100, 20);
-	this.shadow = new Paint.ui.slider(0, 100, 0);
+	this.size = Paint.ui.slider(1, 100, 20);
+	this.shadow = Paint.ui.slider(0, 100, 0);
 	this.elements = [
-		new Paint.ui.label("Size:", "strong")
+		Paint.ui.label("Size:", "strong")
 		,this.size
 		//,new Paint.ui.label("Shadow:", "strong")
 		//,this.shadow
@@ -152,68 +152,181 @@ Paint.tools.Line = function(data) {
 	}	
 };
 Paint.tools.Line.UI = function() {
-	this.size = new Paint.ui.slider(1, 100, 5);
+	this.size = Paint.ui.slider(1, 100, 5);
 	this.elements = [
-		new Paint.ui.label("Size:", "strong")
+		Paint.ui.label("Size:", "strong")
 		,this.size
 	];
 	this.cursor = "crosshair";
 };
 
+function drawEllipse(ctx, x, y, w, h) {
+  var kappa = .5522848;
+      ox = (w / 2) * kappa, // control point offset horizontal
+      oy = (h / 2) * kappa, // control point offset vertical
+      xe = x + w,           // x-end
+      ye = y + h,           // y-end
+      xm = x + w / 2,       // x-middle
+      ym = y + h / 2;       // y-middle
+
+  ctx.beginPath();
+  ctx.moveTo(x, ym);
+  ctx.bezierCurveTo(x, ym - oy, xm - ox, y, xm, y);
+  ctx.bezierCurveTo(xm + ox, y, xe, ym - oy, xe, ym);
+  ctx.bezierCurveTo(xe, ym + oy, xm + ox, ye, xm, ye);
+  ctx.bezierCurveTo(xm - ox, ye, x, ym + oy, x, ym);
+  ctx.closePath();
+}
+
 Paint.tools.Shape = function(data) {
 	this.name = "Shape";
 	var pos = data.pos;
 	var pos2 = data.pos2;
-	var strokeWidth = data.strokeWidth || Paint.settings.Shape.strokewidth.getValue();
-	var strokeStyle = data.StrokeStyle || bgcol;
-	var fillStyle = data.fillStyle || fgcol;
-	var type = data.type || Paint.settings.Shape.type.getType();
+	var strokeWidth;
+	
+	if (data.strokeWidth !== undefined)
+		strokeWidth = data.strokeWidth;
+	else
+		strokeWidth = Paint.settings.Shape.strokeWidth.getValue();
+	var strokeStyle = data.strokeStyle || data.bgcol;
+	var fillStyle = data.fillStyle || data.fgcol;
+	var type = data.type || Paint.settings.Shape.Type.value;
+	
+	this.Render = function(layer) {
+		var ctx = layer.canvasElm.getContext("2d");
+		if (!(pos && pos2)) return;
+		ctx.fillStyle = fillStyle;
+		ctx.lineWidth = strokeWidth;
+		ctx.strokeStyle = strokeStyle;
+		switch (type) {
+			case "Rectangle":
+
+				ctx.fillRect(pos.x, pos.y,pos2.x-pos.x, pos2.y-pos.y);
+				if (strokeWidth) ctx.strokeRect(pos.x, pos.y, pos2.x-pos.x, pos2.y-pos.y);
+				break;
+			case "Ellipse":
+				drawEllipse(ctx, pos.x, pos.y, pos2.x-pos.x, pos2.y-pos.y);
+				//ctx.save();
+				//ctx.beginPath();
+				//ctx.scale(1, (pos2.x - pos.x) / (pos2.y - pos.y));
+				//ctx.arc((pos.x + pos2.x)/2, (pos.y + pos2.y)/2, Math.abs((pos2.x - pos.x)/2), 0, Math.PI * 2);
+				//ctx.restore();
+				ctx.fill();
+				if (strokeWidth) ctx.stroke();
+		}
+	}
+	
+	this.MouseMove = function(pos, layer) {
+		if (!pos) return;
+		pos2 = pos;
+		layer.Clear();
+		this.Render(layer);
+	}
+	
+	this.getData = function() {
+		return {
+			pos: pos,
+			pos2: pos2,
+			strokeWidth: strokeWidth,
+			strokeStyle: strokeStyle,
+			fillStyle: fillStyle,
+			type: type
+		};
+	}	
+	
 }
 Paint.tools.Shape.UI = function() {
-	this.strokeWidth = new Paint.ui.slider(1, 100, 5);
+	this.strokeWidth = Paint.ui.slider(0, 100, 5);
+	this.Type = Paint.ui.Select(["Rectangle", "Ellipse"]);
+	this.Mod = Paint.ui.slider(0,100,50);
+	
 	this.elements = [
-		new Paint.ui.label("Outline size:", "strong")
+		this.Type
+		,Paint.ui.label("Outline size:", "strong")
 		,this.strokeWidth
+		
 	];
 }
 
-Paint.ui.colourPicker = function(col) {
-	this.elm = document.createElement('input');
-	this.elm.style.width = "4em";
-	var picker = new jscolor.color(this.elm, {});
+Paint.ui.Select = function(items) {
+	var elm = document.createElement("select");
+	for (var i = 0;i<items.length;i++) {
+		var opt = new Option(items[i], null);
+		opt.value = items[i];
+		elm.add(opt);
+	}
+	return elm;
+}
+
+Paint.ui.colourPicker = function(col, painter) {
+	var elm = document.createElement('input');
+	elm.style.width = "4em";
+	var picker = new jscolor.color(elm, {});
 	
 	picker.fromString(col);
-	this.getArgb = function() {
+	elm.getArgb = function() {
 		 var rgb = picker.rgb;
 		 return "rgba("+(rgb[0]*255.0)+","+(rgb[1]*255.0)+","+(rgb[2]*255.0)+","+(Paint.settings.globals.opacity.getValue()/255.0)+")";	
 	}
+	
+	picker.onShow = function() {
+		var containerElm = document.getElementById("paint_canvas");
+		var ctx = painter.getCurrentLayer().canvasElm.getContext("2d");
+		var listener = function(evt) {
+			if (evt.button === 2) {
+				var pos = tools.getRelativeMousePos(evt, evt.target);
+				pos.x += containerElm.scrollLeft;
+				pos.y += containerElm.scrollTop;
+				var data = ctx.getImageData(pos.x, pos.y, 1, 1).data;
+				//TODO: this will cause problems with multiple layers.
+				
+				if (data[3] === 0) {
+					picker.fromRGB(1, 1, 1);
+					
+				}
+				else {
+					picker.fromRGB(data[0]/255.0, data[1]/255.0, data[2]/255.0);
+				}
+			}
+		}
+		document.getElementById("layer_temp").addEventListener('mousedown', listener, false);
+		picker.onHide = function() {
+			document.getElementById("layer_temp").removeEventListener('mousedown', listener, false);
+		}	
+	}
+
+
+	
+	return elm;
 	
 }
 
 Paint.ui.label = function(HTML, type) {
 	type = type || "strong";
-	this.elm = document.createElement(type);
-	this.elm.innerHTML = HTML;
-}
-
-Paint.ui.slider = function(min, max, value) {
-	this.elm = document.createElement("input");
-	this.elm.type = "range";
-	this.elm.min = min;
-	this.elm.max = max || 100;
-	this.elm.value = value;
-	this.getValue = function() {
-		if (this.elm.value !== undefined) {
-			return Math.max(this.elm.min,Math.min(parseInt(this.elm.value,10),this.elm.max));
-		}
-	}
+	var elm = document.createElement(type);
+	elm.innerHTML = HTML;
+	return elm;
 }
 
 Paint.ui.splitter = function() {
-	this.elm = document.createElement("span");
-	this.elm.className = 'splitter';
+	var elm = document.createElement("span");
+	elm.className = 'splitter';
+	return elm;
 }
 
+Paint.ui.slider = function(min, max, value) {
+	var elm = document.createElement("input");
+	elm.type = "range";
+	elm.min = min;
+	elm.max = max || 100;
+	elm.value = value;
+	elm.getValue = function() {
+		if (elm.value !== undefined) {
+			return Math.max(elm.min,Math.min(parseInt(elm.value,10),elm.max));
+		}
+	}
+	return elm;
+}
 
 Paint.Toolbar = function(div_id, painter) {
 	var divElm = document.getElementById(div_id);
@@ -224,11 +337,11 @@ Paint.Toolbar = function(div_id, painter) {
 
 	//Add the sections
 	divElm.appendChild(fileElm);
-	divElm.appendChild(new Paint.ui.splitter().elm);
+	divElm.appendChild(Paint.ui.splitter());
 	divElm.appendChild(toolsElm);
-	divElm.appendChild(new Paint.ui.splitter().elm);
+	divElm.appendChild(Paint.ui.splitter());
 	divElm.appendChild(settingsElm);
-	divElm.appendChild(new Paint.ui.splitter().elm)
+	divElm.appendChild(Paint.ui.splitter())
 	divElm.appendChild(toolSettingsElm);
 	
 	//Set up the 'file menu'
@@ -250,17 +363,17 @@ Paint.Toolbar = function(div_id, painter) {
 	}
 
 	//Set up the global tools section
-	var fgpicker = new Paint.ui.colourPicker("#00F");
+	var fgpicker = Paint.ui.colourPicker("#00F", painter);
 	Paint.settings.globals.fgcolour = fgpicker;
-	settingsElm.appendChild(fgpicker.elm);
+	settingsElm.appendChild(fgpicker);
 
-	var bgpicker = new Paint.ui.colourPicker("#FFF");
+	var bgpicker = Paint.ui.colourPicker("#FFF", painter);
 	Paint.settings.globals.bgcolour = bgpicker;
-	settingsElm.appendChild(bgpicker.elm);
+	settingsElm.appendChild(bgpicker);
 	
-	settingsElm.appendChild(new Paint.ui.label("Opacity: ").elm);
-	Paint.settings.globals.opacity = new Paint.ui.slider(0, 255, 255);
-	settingsElm.appendChild(Paint.settings.globals.opacity.elm);
+	settingsElm.appendChild(Paint.ui.label("Opacity: "));
+	Paint.settings.globals.opacity = Paint.ui.slider(0, 255, 255);
+	settingsElm.appendChild(Paint.settings.globals.opacity);
 
 	
 	//Set up the tool-specific-options section
@@ -272,7 +385,7 @@ Paint.Toolbar = function(div_id, painter) {
 		}
 		if (Paint.settings[toolname].elements) {
 			for (var i = 0;i<Paint.settings[toolname].elements.length;i++) {
-				toolSettingsElm.appendChild(Paint.settings[toolname].elements[i].elm);
+				toolSettingsElm.appendChild(Paint.settings[toolname].elements[i]);
 			}
 		}
 		painter.setCursor(Paint.settings[toolname].cursor || "auto");
@@ -552,6 +665,8 @@ Paint.Painter = function() {
 	}
 	
 	this.getLayers = function(){return layers;};
+	
+	this.getCurrentLayer = function() {return current_layer;};
 	
 	this.getSelectedTool = function() {
 		return selected_tool;

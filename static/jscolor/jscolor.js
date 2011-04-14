@@ -356,12 +356,14 @@ var jscolor = {
 		this.hidePicker = function() {
 			if(isPickerOwner()) {
 				removePicker();
+				if (this.onHide) this.onHide();
 			}
 		};
 
 
 		this.showPicker = function() {
 			if(!isPickerOwner()) {
+				if (this.onShow) this.onShow();
 				var tp = jscolor.getElementPos(target); // target pos
 				var ts = jscolor.getElementSize(target); // target size
 				var vp = jscolor.getViewPos(); // view pos
