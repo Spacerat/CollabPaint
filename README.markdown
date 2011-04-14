@@ -5,8 +5,8 @@ CollabPaint is an online collaborative paint and chat app. The server and client
 
 Requirements
 --------------------
-*node.js
-*socket.io
-*expressjs
-*node ejs
-*jquery
+* node.js
+* socket.io
+* expressjs
+* node ejs
+* jquery
