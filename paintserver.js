@@ -134,7 +134,7 @@ var Room = function(url, rooms) {
     	members = newmembers;
     	this.member_count = members.length;
     	if (members.length === 0) {
-    		extend_time(1000 * 60 * 5);
+    		extend_time();
     	}
     }
     
