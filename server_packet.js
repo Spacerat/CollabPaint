@@ -88,8 +88,10 @@ this.Packet = function() {
     //Send this packet to all clients in @room other than @exclude
     this.broadcastToRoom = function(socket, room, exclude) {
         var i;
+		if (!room) return; //TODO: This should never happen, but it does. Find out why.
+		
         var dest = room.getMembers();
-        for (i in dest) {
+		for (i in dest) {
             if (dest[i]!==exclude) {dest[i].send(data);}
         }
     };
