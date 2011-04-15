@@ -253,7 +253,7 @@ Paint.ui.Select = function(items) {
 	for (var i = 0;i<items.length;i++) {
 		var opt = new Option(items[i], null);
 		opt.value = items[i];
-		elm.add(opt);
+		elm.add(opt, null);
 	}
 	return elm;
 }
