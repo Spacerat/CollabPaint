@@ -1,4 +1,3 @@
-
 //Console.log fix
 try {
 	(function() {var a = console.log;})();
@@ -626,7 +625,7 @@ Paint.Painter = function() {
 	};
 	
 	this.MouseDown = function(pos, button) {
-		if (!current_tool) {
+		if (!current_tool && button !== 1) {
 			var fgcol, bgcol, tcol;
 			fgcol = Paint.settings.globals.fgcolour.getArgb();
 			bgcol = Paint.settings.globals.bgcolour.getArgb();
