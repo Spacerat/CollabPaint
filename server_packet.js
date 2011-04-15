@@ -1,4 +1,3 @@
-
 /* Packet class. 
     Example use of chaining: new Packet().acceptJoin().fullText(room).clientList(room).Send(client);
 */
@@ -16,6 +15,7 @@ this.Packet = function() {
     //new_member, inform room members of a new member.
     this.newMember = function(client, room) {
         data.new_member = client.info;
+
         data.member_count = room.member_count;
         data.members = room.getMembersInfo();
         return this;
@@ -23,8 +23,10 @@ this.Packet = function() {
     
     this.memberLeft = function(client, room, reason) {
     	data.member_left = client.info;
-    	data.member_count = room.member_count;
-    	data.members = room.getMembersInfo();
+	if (room) {
+    		data.member_count = room.member_count;
+    		data.members = room.getMembersInfo();
+	}
     	return this;
     }
 
