@@ -724,7 +724,11 @@ Paint.Canvas = function(object_id, painter) {
 			pos.y += containerElm.scrollTop;
 			painter.MouseUp(pos);
 		};
-		temp_layer.canvasElm.oncontextmenu = function() {return false;};
+		temp_layer.canvasElm.oncontextmenu = function() {
+			if (painter.getSelectedTool() !== "Pointer") {
+				return false;
+			}
+		};
 		var resizetimer;
 		window.onresize = function(evt) {
 			/*
