@@ -208,10 +208,11 @@ this.Server = function(app) {
         
         client.on('disconnect', function() {
         	if (client.data && client.data.room) {
+        		client.data.room.Chat(SRVclient, client.info.name+" has left.");
         		client.data.room.removeClient(client);
         	}
         	new Packet().memberLeft(client, client.data.room, "disconnected").broadcastToRoom(client.listener, client.data.room);
-        	client.data.room.Chat(SRVclient, client.info.name+" has left.");
+        	
         });
         
         client.on('message', function(data) {
