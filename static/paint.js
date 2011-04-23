@@ -159,6 +159,75 @@ Paint.tools.Line.UI = function() {
 	this.cursor = "crosshair";
 };
 
+
+Paint.tools.Tube = function(data) {
+	var points = data.points;
+	var pos = data.pos;
+	this.name = "Tube";
+	
+	if (points == null && pos == null) {
+		throw "Error";
+	}
+	else if (points == null) {
+		points = [];
+		points.push(pos);
+	}
+	else {
+		pos = points[0];
+	}
+	var size = data.size || Paint.settings.Tube.size.getValue();
+	var fill1 = data.fill1 || data.fgcol;
+	var fill2 = data.fill2 || data.bgcol;
+	
+	this.Render = function(layer) {
+		var ctx = layer.canvasElm.getContext("2d");
+
+		var k = 0;
+		for (var i = 0; i < points.length; i++) {
+			ctx.beginPath();
+			ctx.arc(points[i].x, points[i].y, size, 0, Math.PI * 2);		
+			
+			if (k === 0) {
+				ctx.fillStyle = fill1;
+			}
+			else {
+				ctx.fillStyle = fill2;
+			}
+			ctx.closePath();			
+			ctx.fill();
+			
+			k = 1 - k;
+		}
+
+	}
+	
+	this.MouseMove = function(pos, layer) {
+		points.push(pos);
+		layer.Clear();
+		this.Render(layer);
+	}
+	
+	this.MouseUp = function(){};
+	
+	this.getData = function() {
+		return {
+			pos: pos,
+			fill1: fill1,
+			fill2: fill2,
+			size: size,
+			points: points
+		};
+	}
+}
+Paint.tools.Tube.UI = function() {
+	this.size = Paint.ui.slider(1, 100, 20);
+	this.elements = [
+		Paint.ui.label("Size:", "strong")
+		,this.size
+	];
+	this.cursor = "crosshair";
+};
+
 function drawEllipse(ctx, x, y, w, h) {
   var kappa = .5522848;
       ox = (w / 2) * kappa, // control point offset horizontal
@@ -205,11 +274,6 @@ Paint.tools.Shape = function(data) {
 				break;
 			case "Ellipse":
 				drawEllipse(ctx, pos.x, pos.y, pos2.x-pos.x, pos2.y-pos.y);
-				//ctx.save();
-				//ctx.beginPath();
-				//ctx.scale(1, (pos2.x - pos.x) / (pos2.y - pos.y));
-				//ctx.arc((pos.x + pos2.x)/2, (pos.y + pos2.y)/2, Math.abs((pos2.x - pos.x)/2), 0, Math.PI * 2);
-				//ctx.restore();
 				ctx.fill();
 				if (strokeWidth) ctx.stroke();
 		}
