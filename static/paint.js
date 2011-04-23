@@ -390,7 +390,7 @@ Paint.ui.slider = function(min, max, value) {
 		elm.min = min;
 		elm.max = max || 100;
 	}
-	except (e) {
+	catch (e) {
 	
 	}
 	elm.value = value;
