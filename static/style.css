@@ -5,20 +5,13 @@ body {
 	padding: 0;
 	font-family: sans;
 	background-color: #EEE;
+	overflow: hidden;
 }
 
 #mainbox {
 
 	height: 100%;	
 	width: 100%;
-
-	display: box;
-	box-orient: vertical;
-	display: -webkit-box;
-	-webkit-box-orient: vertical;
-	display: -moz-box;
-	-moz-box-orient: vertical;
-
 
 }
 
@@ -59,75 +52,20 @@ h2 {
 /* Paint stuff */
 
 #vertical_stretch {
-	display: box;
-	box-orient: horizontal;
-	box-flex: 1;
-	
-	display: -webkit-box;
-	-webkit-box-orient: horizontal;
-	-webkit-box-flex: 1;
 
-	display: -moz-box;
-	-moz-box-orient: horizontal;
-	-moz-box-flex: 1;
-	width: 100%;
-	
-	padding-bottom: 1em;
 }
 
 #paint_container {
-	display: box;
-	box-orient: vertical;
-	box-flex: 1;
 
-	display: -webkit-box;
-	-webkit-box-orient: vertical;
-	-webkit-box-flex: 1;
 
-	display: -moz-box;
-	-moz-box-orient: vertical;
-	-moz-box-flex: 1;
-		
-	border: thin black solid;
-	margin-left: 1em;
-	border: thin #DDD solid;
 	min-width: 300px;
 }
 
 #rightpanel {
 
-
-	display: box;
-	box-orient: vertical;
-	
-	display: -webkit-box;
-	-webkit-box-orient: vertical;
-	
-	display: -moz-box;
-	-moz-box-orient: vertical;
-
-	width: 300px;
-	-webkit-border-top-left-radius: 13px;
-	-webkit-border-bottom-left-radius: 13px;
-	-moz-border-radius-topleft: 13px;
-	-moz-border-radius-bottomleft: 13px;
-	border-top-left-radius: 13px;
-	border-bottom-left-radius: 13px;
-	border: thin #DDD solid;
 	background-color: white;
-	padding-left: 10px;
-	padding-bottom: 1em;
 	min-width: 0;
 	overflow: hidden;
-}
-
-#rightgrabber {
-	width: 10px;
-}
-#rightgrabber:hover {
-	background-color: white;
-	opacity: 0.4;
-	cursor: e-resize;
 }
 
 #panelhead {
@@ -156,9 +94,7 @@ h2 {
 	
 }
 #chatcont {
-	box-flex: 1;
-	-webkit-box-flex: 1;
-	-moz-box-flex: 1;
+
 	margin-right: 1em;
 	
 	width: 100%;
@@ -173,18 +109,11 @@ h2 {
 	width: 100%;
 }
 #chatform > div {
-	display: box;
-	box-orient: horizontal;
-	display: -webkit-box;
-	-webkit-box-orient: horizontal;
-	display: -moz-box;
-	-moz-box-orient: horizontal;
+
 }
 #chatinput {
 	display: block;
-	box-flex: 1;
-	-webkit-box-flex: 1;
-	-moz-box-flex: 1;
+
 }
 .chatname {
 	color: #444;
@@ -217,9 +146,7 @@ button > img {
 
 #paint_canvas {
 	overflow: scroll;
-	box-flex: 1;
-	-webkit-box-flex: 1;
-	-moz-box-flex: 1;
+	height: 100px;
 	background-color: white;
 	
 }
@@ -243,8 +170,7 @@ canvas.canvas {
 	padding-left: 1em;
 }
 
-.splitter {
-	border: thin gray solid;
-	margin-left: 1em;
-	margin-right: 1em;
+.vsplitbar {
+	background-color: #AAF;
 }
+

@@ -435,11 +435,9 @@ Paint.Painter = function() {
 	var toolbar = null;
 	var last_sent_id;
 
-	var MozillaFix = function() {
+	var ChatFix = function() {
+		$('#chatcont').height($('#rightpanel').height() - $('#panelhead').height() - $('#chatform').height() -10);
 		$('#chat').height($('#chatcont').height());
-		if ($.browser.mozilla) {
-			$('#chat').width(Math.max(document.body.clientWidth - $('#rightgrabber').position().left - 13,50));
-		}
 	}
 	
 	this.AddLayer = function(opts) {
@@ -477,7 +475,7 @@ Paint.Painter = function() {
 		window.addEventListener('mousemove', function(evt) {
 			if (dragging) {
 				$('#rightpanel').width(document.body.clientWidth - evt.pageX - 13 + dragoffset );
-				MozillaFix();
+				ChatFix();
 			}
 		}, false);
 		window.addEventListener('mouseup', function(evt) {
@@ -488,14 +486,8 @@ Paint.Painter = function() {
 			dragging = true;
 			dragoffset = pos.x;
 		});;
-		if ($.browser.mozilla) {
-			this.ProcessChat({
-				sender: {name: "Joseph Atkins-Turkish"},
-				text: "<span style='color: #800;'>Firefox user: I just thought I'd let you know how much effort I put in to making this stupid chat box usable for your browser. That is all.<span>"
-			});
-		}
 		$(window).resize(function(evt){
-			MozillaFix();
+			ChatFix();
 		});
 		
 		var usc = $("#usercount");
@@ -529,7 +521,7 @@ Paint.Painter = function() {
 				return txt +"<br/>";
 			}
 		});
-		MozillaFix();
+		ChatFix();
 		elm.scrollTop = elm.scrollHeight;
 	}
 	
@@ -701,7 +693,6 @@ Paint.Canvas = function(object_id, painter) {
 		containerElm.appendChild(layersElm);
 		temp_layer.Attach(layersElm);
 		temp_layer.Resize(w, h);
-		//containerElm.style.height = (window.innerHeight-tools.findAbsolutePosition(containerElm).y)+"px";
 		var downEvent = function(evt) {
 			//evt.preventDefault();
 			var pos = tools.getRelativeMousePos(evt, temp_layer.canvasElm);
@@ -729,24 +720,12 @@ Paint.Canvas = function(object_id, painter) {
 				return false;
 			}
 		};
-		var resizetimer;
-		window.onresize = function(evt) {
-			/*
-			containerElm.style.height = (window.innerHeight-tools.findAbsolutePosition(containerElm).y)+"px";
-			
-			clearTimeout(resizetimer);
-			resizetimer = setTimeout(function() {
-				temp_layer.canvasElm.width = containerElm.offsetWidth;
-				temp_layer.canvasElm.height = containerElm.offsetHeight;
-				var layers = painter.getLayers();
-				for (var i=0;i<layers.length;i++) {
-					layers[i].canvasElm.width = containerElm.offsetWidth;
-					layers[i].canvasElm.height = containerElm.offsetHeight;
-					layers[i].RenderHistory(painter);
-				}
-			}, 10);
-			*/
+		var resfunc = function() {
+			containerElm.style.height = (window.innerHeight-$(containerElm).offset().top)+"px";
 		}
+		resfunc();
+		$(window).resize(resfunc);
+		$('#vertical_stretch').resize(resfunc);
 		if ('ontouchstart' in window) {
 			document.addEventListener("touchstart", downEvent, false);
 			document.body.addEventListener('touchmove',moveEvent , false);

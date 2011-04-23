@@ -4,8 +4,22 @@
 <script src="/jscolor/jscolor.js"></script>
 <script src="/paint.js"> </script>		
 <script src="/jquery-1.5.2.min.js"></script>
+<script src="/splitter.js"></script>
 <script> 
 	$(function() {
+	
+		$("#vertical_stretch").splitter({
+			type: "v",
+			outline: true,
+			anchorToWindow: true,
+			maxRight: 400, sizeRight: 300
+
+		});
+		
+		//$(window).resize(function() {
+		//	$('#paint_canvas').height($(window).height() - $('#toolbar').height() - $('h1').height());
+		//});
+
 		jscolor.dir = '/jscolor/';
 		var doc = new Paint.Painter();
 		doc.CreateToolbar("toolbar");
