@@ -178,15 +178,17 @@ Paint.tools.Tube = function(data) {
 	var size = data.size || Paint.settings.Tube.size.getValue();
 	var fill1 = data.fill1 || data.fgcol;
 	var fill2 = data.fill2 || data.bgcol;
+	var shrink = data.shrink || Paint.settings.Tube.shrink.getValue();
 	
 	this.Render = function(layer) {
 		var ctx = layer.canvasElm.getContext("2d");
 
 		var k = 0;
+		var r = size;
 		for (var i = 0; i < points.length; i++) {
 			ctx.beginPath();
-			ctx.arc(points[i].x, points[i].y, size, 0, Math.PI * 2);		
-			
+			ctx.arc(points[i].x, points[i].y, r, 0, Math.PI * 2);		
+			r -= (shrink / 50.0);
 			if (k === 0) {
 				ctx.fillStyle = fill1;
 			}
@@ -214,6 +216,7 @@ Paint.tools.Tube = function(data) {
 			pos: pos,
 			fill1: fill1,
 			fill2: fill2,
+			shrink: shrink,
 			size: size,
 			points: points
 		};
@@ -221,9 +224,12 @@ Paint.tools.Tube = function(data) {
 }
 Paint.tools.Tube.UI = function() {
 	this.size = Paint.ui.slider(1, 100, 20);
+	this.shrink = Paint.ui.slider(0, 100, 0);
 	this.elements = [
 		Paint.ui.label("Size:", "strong")
 		,this.size
+		,Paint.ui.label("Shrink:", "strong")
+		,this.shrink
 	];
 	this.cursor = "crosshair";
 };
