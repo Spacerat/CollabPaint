@@ -385,9 +385,14 @@ Paint.ui.splitter = function() {
 
 Paint.ui.slider = function(min, max, value) {
 	var elm = document.createElement("input");
-	elm.type = "range";
-	elm.min = min;
-	elm.max = max || 100;
+	try {
+		elm.type = "range";
+		elm.min = min;
+		elm.max = max || 100;
+	}
+	except (e) {
+	
+	}
 	elm.value = value;
 	elm.getValue = function() {
 		if (elm.value !== undefined) {
