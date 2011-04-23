@@ -178,7 +178,8 @@ Paint.tools.Tube = function(data) {
 	var size = data.size || Paint.settings.Tube.size.getValue();
 	var fill1 = data.fill1 || data.fgcol;
 	var fill2 = data.fill2 || data.bgcol;
-	var shrink = data.shrink || Paint.settings.Tube.shrink.getValue();
+	var shrink;
+	if (data.shrink !== undefined) shrink = data.shrink; else Paint.settings.Tube.shrink.getValue();
 	
 	this.Render = function(layer) {
 		var ctx = layer.canvasElm.getContext("2d");
