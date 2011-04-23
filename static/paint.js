@@ -1,4 +1,3 @@
-
 //Console.log fix
 try {
 	(function() {var a = console.log;})();
@@ -253,7 +252,7 @@ Paint.ui.Select = function(items) {
 	for (var i = 0;i<items.length;i++) {
 		var opt = new Option(items[i], null);
 		opt.value = items[i];
-		elm.add(opt);
+		elm.add(opt, null);
 	}
 	return elm;
 }
@@ -626,7 +625,7 @@ Paint.Painter = function() {
 	};
 	
 	this.MouseDown = function(pos, button) {
-		if (!current_tool) {
+		if (!current_tool && button !== 1) {
 			var fgcol, bgcol, tcol;
 			fgcol = Paint.settings.globals.fgcolour.getArgb();
 			bgcol = Paint.settings.globals.bgcolour.getArgb();
@@ -725,7 +724,11 @@ Paint.Canvas = function(object_id, painter) {
 			pos.y += containerElm.scrollTop;
 			painter.MouseUp(pos);
 		};
-		temp_layer.canvasElm.oncontextmenu = function() {return false;};
+		temp_layer.canvasElm.oncontextmenu = function() {
+			if (painter.getSelectedTool() !== "Pointer") {
+				return false;
+			}
+		};
 		var resizetimer;
 		window.onresize = function(evt) {
 			/*
