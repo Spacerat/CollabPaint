@@ -159,6 +159,75 @@ Paint.tools.Line.UI = function() {
 	this.cursor = "crosshair";
 };
 
+
+Paint.tools.Tube = function(data) {
+	var points = data.points;
+	var pos = data.pos;
+	this.name = "Tube";
+	
+	if (points == null && pos == null) {
+		throw "Error";
+	}
+	else if (points == null) {
+		points = [];
+		points.push(pos);
+	}
+	else {
+		pos = points[0];
+	}
+	var size = data.size || Paint.settings.Tube.size.getValue();
+	var fill1 = data.fill1 || data.fgcol;
+	var fill2 = data.fill2 || data.bgcol;
+	
+	this.Render = function(layer) {
+		var ctx = layer.canvasElm.getContext("2d");
+
+		var k = 0;
+		for (var i = 0; i < points.length; i++) {
+			ctx.beginPath();
+			ctx.arc(points[i].x, points[i].y, size, 0, Math.PI * 2);		
+			
+			if (k === 0) {
+				ctx.fillStyle = fill1;
+			}
+			else {
+				ctx.fillStyle = fill2;
+			}
+			ctx.closePath();			
+			ctx.fill();
+			
+			k = 1 - k;
+		}
+
+	}
+	
+	this.MouseMove = function(pos, layer) {
+		points.push(pos);
+		layer.Clear();
+		this.Render(layer);
+	}
+	
+	this.MouseUp = function(){};
+	
+	this.getData = function() {
+		return {
+			pos: pos,
+			fill1: fill1,
+			fill2: fill2,
+			size: size,
+			points: points
+		};
+	}
+}
+Paint.tools.Tube.UI = function() {
+	this.size = Paint.ui.slider(1, 100, 20);
+	this.elements = [
+		Paint.ui.label("Size:", "strong")
+		,this.size
+	];
+	this.cursor = "crosshair";
+};
+
 function drawEllipse(ctx, x, y, w, h) {
   var kappa = .5522848;
       ox = (w / 2) * kappa, // control point offset horizontal
@@ -205,11 +274,6 @@ Paint.tools.Shape = function(data) {
 				break;
 			case "Ellipse":
 				drawEllipse(ctx, pos.x, pos.y, pos2.x-pos.x, pos2.y-pos.y);
-				//ctx.save();
-				//ctx.beginPath();
-				//ctx.scale(1, (pos2.x - pos.x) / (pos2.y - pos.y));
-				//ctx.arc((pos.x + pos2.x)/2, (pos.y + pos2.y)/2, Math.abs((pos2.x - pos.x)/2), 0, Math.PI * 2);
-				//ctx.restore();
 				ctx.fill();
 				if (strokeWidth) ctx.stroke();
 		}
@@ -435,11 +499,9 @@ Paint.Painter = function() {
 	var toolbar = null;
 	var last_sent_id;
 
-	var MozillaFix = function() {
+	var ChatFix = function() {
+		$('#chatcont').height($('#rightpanel').height() - $('#panelhead').height() - $('#chatform').height() -10);
 		$('#chat').height($('#chatcont').height());
-		if ($.browser.mozilla) {
-			$('#chat').width(Math.max(document.body.clientWidth - $('#rightgrabber').position().left - 13,50));
-		}
 	}
 	
 	this.AddLayer = function(opts) {
@@ -477,7 +539,7 @@ Paint.Painter = function() {
 		window.addEventListener('mousemove', function(evt) {
 			if (dragging) {
 				$('#rightpanel').width(document.body.clientWidth - evt.pageX - 13 + dragoffset );
-				MozillaFix();
+				ChatFix();
 			}
 		}, false);
 		window.addEventListener('mouseup', function(evt) {
@@ -488,14 +550,8 @@ Paint.Painter = function() {
 			dragging = true;
 			dragoffset = pos.x;
 		});;
-		if ($.browser.mozilla) {
-			this.ProcessChat({
-				sender: {name: "Joseph Atkins-Turkish"},
-				text: "<span style='color: #800;'>Firefox user: I just thought I'd let you know how much effort I put in to making this stupid chat box usable for your browser. That is all.<span>"
-			});
-		}
 		$(window).resize(function(evt){
-			MozillaFix();
+			ChatFix();
 		});
 		
 		var usc = $("#usercount");
@@ -529,7 +585,7 @@ Paint.Painter = function() {
 				return txt +"<br/>";
 			}
 		});
-		MozillaFix();
+		ChatFix();
 		elm.scrollTop = elm.scrollHeight;
 	}
 	
@@ -701,7 +757,6 @@ Paint.Canvas = function(object_id, painter) {
 		containerElm.appendChild(layersElm);
 		temp_layer.Attach(layersElm);
 		temp_layer.Resize(w, h);
-		//containerElm.style.height = (window.innerHeight-tools.findAbsolutePosition(containerElm).y)+"px";
 		var downEvent = function(evt) {
 			//evt.preventDefault();
 			var pos = tools.getRelativeMousePos(evt, temp_layer.canvasElm);
@@ -729,24 +784,12 @@ Paint.Canvas = function(object_id, painter) {
 				return false;
 			}
 		};
-		var resizetimer;
-		window.onresize = function(evt) {
-			/*
-			containerElm.style.height = (window.innerHeight-tools.findAbsolutePosition(containerElm).y)+"px";
-			
-			clearTimeout(resizetimer);
-			resizetimer = setTimeout(function() {
-				temp_layer.canvasElm.width = containerElm.offsetWidth;
-				temp_layer.canvasElm.height = containerElm.offsetHeight;
-				var layers = painter.getLayers();
-				for (var i=0;i<layers.length;i++) {
-					layers[i].canvasElm.width = containerElm.offsetWidth;
-					layers[i].canvasElm.height = containerElm.offsetHeight;
-					layers[i].RenderHistory(painter);
-				}
-			}, 10);
-			*/
+		var resfunc = function() {
+			containerElm.style.height = (window.innerHeight-$(containerElm).offset().top)+"px";
 		}
+		resfunc();
+		$(window).resize(resfunc);
+		$('#vertical_stretch').resize(resfunc);
 		if ('ontouchstart' in window) {
 			document.addEventListener("touchstart", downEvent, false);
 			document.body.addEventListener('touchmove',moveEvent , false);
