@@ -796,6 +796,9 @@ Paint.Canvas = function(object_id, painter) {
 				return false;
 			}
 		};
+		
+		
+		
 		var resfunc = function() {
 			containerElm.style.height = (window.innerHeight-$(containerElm).offset().top)+"px";
 		}
@@ -812,7 +815,30 @@ Paint.Canvas = function(object_id, painter) {
 			window.addEventListener('mousemove',moveEvent , false);
 			window.addEventListener('mouseup', upEvent, false);
 		}
-
+		
+		//Drag/drop file upload
+		
+		var dragfile = null;
+		containerElm.addEventListener('dragover', function(evt) {
+			evt.stopPropagation();
+			evt.preventDefault();
+			if (dragfile === null) {
+				console.log(evt.dataTransfer);
+				dragfile = evt.dataTransfer.files[0];
+				var r = new FileReader();
+				r.onload = function(data) {
+					
+				}
+				r.readAsBinaryString(dragfile);
+				console.log(dragfile);
+			}			
+		}, false);
+		containerElm.addEventListener('drop', function(evt) {
+			console.log(evt.dataTransfer);
+			evt.stopPropagation();
+			evt.preventDefault();
+		}, false)
+		
 	}
 	
 	this.AddLayer = function(layer) {

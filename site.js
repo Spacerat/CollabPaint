@@ -66,6 +66,13 @@ app.get('/paint/:id', function(req, res) {
     });
 });
 
+app.post('/paint/:id/upload/', function(req, res) {
+	var roomname = req.params.id;
+	
+	console.log(req);
+	
+});
+
 app.listen(8765);
 paintserver.Server(app);
 
