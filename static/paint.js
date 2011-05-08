@@ -159,7 +159,7 @@ Paint.tools.Line.UI = function() {
 	this.cursor = "crosshair";
 };
 
-
+/*
 Paint.tools.Tube = function(data) {
 	var points = data.points;
 	var pos = data.pos;
@@ -234,6 +234,7 @@ Paint.tools.Tube.UI = function() {
 	];
 	this.cursor = "crosshair";
 };
+*/
 
 function drawEllipse(ctx, x, y, w, h) {
   var kappa = .5522848;
