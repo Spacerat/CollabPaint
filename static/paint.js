@@ -510,6 +510,7 @@ Paint.Painter = function() {
 	var socket;
 	var toolbar = null;
 	var last_sent_id;
+	var images = {};
 
 	var ChatFix = function() {
 		$('#chatcont').height($('#rightpanel').height() - $('#panelhead').height() - $('#chatform').height() -10);
@@ -615,6 +616,23 @@ Paint.Painter = function() {
 					canvas.getTempLayer().Clear();
 				}
 				break;
+			case 'image':
+				var canv = layers[command.layerid];
+				if (is_new) {layers[command.layerid].addHistory(command);}
+				
+				if (images[command.key]) {
+					canv.canvasElm.getContext('2d').drawImage(images[command.key], command.pos.x, command.pos.y);
+				}
+				else {
+					var n = new Image();
+					n.src = command.url;
+					n.onload = function() {
+						images[command.key] = n;
+						canv.Clear();
+						canv.RenderHistory(that);
+					}
+				}
+				break;
 			default:
 				console.log("Unknown command", command);
 		}
@@ -622,6 +640,7 @@ Paint.Painter = function() {
 
 	
 	this.Connect = function(roomname) {
+		this.room_name = roomname;
 		socket = new io.Socket(null);
 		socket.connect();
 		socket.on('connect', function() {
@@ -731,6 +750,17 @@ Paint.Painter = function() {
 		}
 	}
 	
+	this.sendImageDrop = function(key, pos) {
+		if (socket) {
+			socket.send({'command': {
+				cmd: 'image',
+				key: key,
+				pos: pos,
+				layerid: current_layer.id
+			}});
+		}
+	}
+	
 	this.getLayers = function(){return layers;};
 	
 	this.getCurrentLayer = function() {return current_layer;};
@@ -818,26 +848,53 @@ Paint.Canvas = function(object_id, painter) {
 		
 		//Drag/drop file upload
 		
-		var dragfile = null;
+		containerElm.addEventListener('dragstart', function(evt) {
+			console.log(evt);
+			evt.stopPropagation();
+			evt.preventDefault();
+			return false;
+		}, false);
 		containerElm.addEventListener('dragover', function(evt) {
 			evt.stopPropagation();
 			evt.preventDefault();
-			if (dragfile === null) {
-				console.log(evt.dataTransfer);
-				dragfile = evt.dataTransfer.files[0];
-				var r = new FileReader();
-				r.onload = function(data) {
-					
-				}
-				r.readAsBinaryString(dragfile);
-				console.log(dragfile);
-			}			
+			evt.dataTransfer.dropEffect = "copy";
+			$(temp_layer.canvasElm).css('background', '#BBB').css('opacity', '0.5');
+			return false;			
 		}, false);
+		var dragend = function(evt) {
+			$(temp_layer.canvasElm).css('background', 'none');
+		}
+		containerElm.addEventListener('dragend', dragend, false);
+		containerElm.addEventListener('dragleave', dragend, false);
 		containerElm.addEventListener('drop', function(evt) {
-			console.log(evt.dataTransfer);
 			evt.stopPropagation();
 			evt.preventDefault();
+			
+			var file = evt.dataTransfer.files[0];
+			if (file.fileSize > 4194304) {
+				alert("File too large. Image uploads are limited to 4 MB.");
+				return;
+			}
+			if (file.type.indexOf('image/') !== 0) {
+				alert("Only images are supported.");
+				return;
+			}
+			
+			var xhr = new XMLHttpRequest;
+			var up = xhr.upload;
+			xhr.onload = function(xevt) {
+				var obj = JSON.parse(xhr.responseText);
+				painter.sendImageDrop(obj.key, {x: evt.offsetX, y: evt.offsetY});
+			}
+			xhr.open('post', painter.room_name+'/upload', true);
+			xhr.setRequestHeader('X-File-Size', file.fileSize);
+			xhr.setRequestHeader('X-File-Name', file.fileName);
+			xhr.send(file);
+			console.log(file);
+			dragend();
+			return false;
 		}, false)
+		
 		
 	}
 	

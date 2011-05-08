@@ -4,13 +4,14 @@ var http = require('http');
 var express = require('express');
 var templater = require('ejs');
 var fs = require('fs');
+var form = require('connect-form');
 
 var app = express.createServer();
 
 app.configure(function() {
     app.use(express.static(__dirname + '/static'));
     app.use(express.bodyParser());
-    
+    app.use(form());
     app.use(express.cookieParser());
     app.use(express.session({key:"joe", secret:"lolwut"}));
     
@@ -49,8 +50,6 @@ app.get('/rooms', function(req, res) {
 	}
 });
 
-
-
 //Index, containing the collab box.
 app.get('/paint/:id', function(req, res) {
 
@@ -66,11 +65,32 @@ app.get('/paint/:id', function(req, res) {
     });
 });
 
-app.post('/paint/:id/upload/', function(req, res) {
-	var roomname = req.params.id;
+app.on('data', function(chunk) {
+	console.log(chunk);
+});
+
+
+app.post('/paint/:id/upload', function(req, res) {
+	var size = req.headers['content-length'];
 	
-	console.log(req);
+	var buf = new Buffer(parseInt(size, 10));
+	var pos = 0;
 	
+	//req.setEncoding('binary');
+	req.on('data', function(chunk) {
+		chunk.copy(buf, pos);
+		pos += chunk.length;
+	});
+	req.on('end', function() {
+		paintserver.uploadImage(req, req.params.id, buf, function(status, url) {
+			if (status === 200) {
+				res.send(JSON.stringify(url), status);
+			}
+			else {
+				res.send(status);
+			}
+		});
+	});
 });
 
 app.listen(8765);

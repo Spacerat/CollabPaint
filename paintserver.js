@@ -2,6 +2,8 @@
 var io = require('socket.io');
 var util = require('util');
 var Packet = require('./server_packet').Packet;
+var crypto = require('crypto');
+var fs = require('fs');
 
 /* Room class. Pass settings object in the form: {
     max_clients: int,    //10
@@ -20,7 +22,7 @@ paint.Layer = function(name) {
 paint.Document = function() {
 	var history = [];
 	var layers = [];
-
+	
 	this.DoCommand = function(command) {
 
 		switch (command.cmd) {
@@ -37,9 +39,14 @@ paint.Document = function() {
 		command.id = history.length;
 		history.push(command);
 	}
-	
+
 	this.getHistory = function() {
 		return history;
+	}
+	
+	this.Free = function() {
+		history = null;
+		layers = null;
 	}
 	
 }
@@ -53,17 +60,28 @@ var Room = function(url, rooms) {
     var max_members = 255;
     var timeout_time = 1000 * 60 * 60; 
     var timeout;
+    var images = {};
     var timeout_func = function() {
     	for (var c in members) {
     		members[c].Disconnect("The room has timed out.");
     	}
+    	//Delete room
     	delete rooms[url];
+    	members = [];
+    	doc.Free();
+    	doc = null;
+    	images = null;
+    	
     };
     var extend_time = function(time) {
     	time = time || timeout_time;
     	clearTimeout(timeout);
     	timeout = setTimeout(timeout_func, time);
     }
+    
+    var roomhash = crypto.createHash('md5');
+    var roomcacheurl = 'static/roomcache/'+roomhash.digest('base64');
+    fs.mkdir(roomcacheurl, '0777');
     
     this.member_count = 0;
     
@@ -87,12 +105,16 @@ var Room = function(url, rooms) {
     
     this.clientByName = function(name) {
     	if (name === ServerName) return {};
-        for (var i = 0;i < members.length; i++) {
-        	if (name === members[i].info.name) {
-        		return true;
-        	}
-        }
+        members.forEach(function(m) {
+        	if (m.info.name === name) return m;
+        });
         return null;
+    }
+    
+    this.clientById = function(id) {
+    	members.forEach(function(m) {
+    		if (m.info.id === id) return m;
+    	});
     }
     
     //Add a member to this room.
@@ -139,8 +161,41 @@ var Room = function(url, rooms) {
     }
     
     this.DoCommand = function(command) {
+    	
+    	if (command.cmd === 'image') {
+    		if (images[command.key] === undefined) {
+    			return false;
+    		}
+    		else {
+    			command.url = images[command.key].url;
+    		}
+    	}
     	doc.DoCommand(command);
     	extend_time();
+    }
+    
+    this.addImage = function(req, buf, cb) {
+		var hash = crypto.createHash('md5');
+		hash.update(buf);
+		var key = hash.digest('base64');
+		var ext = req.headers['x-file-name'];
+		ext = ext.substr(ext.lastIndexOf('.'));
+		if (images[key] !== undefined) {
+			cb(images[key]);
+		}
+		else {
+			var imgurl = roomcacheurl +'/'+ key + ext;
+			images[key] = {
+				url: imgurl.substr(roomcacheurl.indexOf('/')),
+				key: key
+			}
+			
+			fs.writeFile(imgurl, buf, 'binary', function(err) {
+				if (!err) {
+					cb(images[key]);
+				}
+			});
+		}
     }
     
     this.getMembers = function() {
@@ -163,6 +218,11 @@ this.Server = function(app) {
     var socket = io.listen(app);
     var rooms = {};
     
+    fs.readdir('static/roomcache', function(err) {
+    	if (err) {
+    		fs.mkdir('static/roomcache', '0777');
+    	}
+    });
     
     this.getRooms = function() {return rooms;};
     
@@ -174,6 +234,23 @@ this.Server = function(app) {
 			}  
 		}
 		return pubrooms;
+    }
+    
+    this.uploadImage = function(req, roomid, buf, callback) {
+    	var room = rooms[roomid];
+    	if (!room) {
+    		callback(404);
+    		return;
+    	}
+    	var clientid = req.headers['x-client-id'];
+    	var client = room.clientById(clientid);
+    	if (client) {
+    		callback(400);
+    		return;
+    	}
+    	room.addImage(req, buf, function(id){
+    		callback(200, id);
+    	});
     }
     
     socket.on('connection', function(client) {
