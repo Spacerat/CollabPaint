@@ -801,9 +801,9 @@ Paint.ProgressBar = function(parent) {
 	progress.innerText = "Uploading...";
 	var pos = 0;
 	var m = setInterval(function() {
-		pos += 3;
+		pos += 1;
 		progress.style.backgroundPosition = pos+"px 0px";
-	}, 10);
+	}, 50);
 	
 	this.setPercentage = function(p) {
 		$(progress).animate({
