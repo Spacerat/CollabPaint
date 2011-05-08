@@ -4,14 +4,12 @@ var http = require('http');
 var express = require('express');
 var templater = require('ejs');
 var fs = require('fs');
-var form = require('connect-form');
 
 var app = express.createServer();
 
 app.configure(function() {
     app.use(express.static(__dirname + '/static'));
     app.use(express.bodyParser());
-    app.use(form());
     app.use(express.cookieParser());
     app.use(express.session({key:"joe", secret:"lolwut"}));
     
