@@ -621,7 +621,8 @@ Paint.Painter = function() {
 				if (is_new) {layers[command.layerid].addHistory(command);}
 				
 				if (images[command.key]) {
-					canv.canvasElm.getContext('2d').drawImage(images[command.key], command.pos.x, command.pos.y);
+					var ctx = canv.canvasElm.getContext('2d');
+					ctx.drawImage(images[command.key], command.pos.x, command.pos.y);
 				}
 				else {
 					var n = new Image();
@@ -918,8 +919,6 @@ Paint.Canvas = function(object_id, painter) {
 				return;
 			}
 			
-			var xhr = new XMLHttpRequest;
-			var up = xhr.upload;
 			var loadedimage = null;
 			var loadedkey = null;
 			var computedhash = null;
@@ -931,16 +930,6 @@ Paint.Canvas = function(object_id, painter) {
 				}
 			}
 			
-			xhr.onload = function(xevt) {
-				var obj = JSON.parse(xhr.responseText);
-				loadedkey = obj.key;
-				cacheClientImage();
-				painter.sendImageDrop(obj.key, {x: evt.offsetX, y: evt.offsetY});
-				bar.Remove();
-			}
-			up.onprogress = function(pevt) {
-				bar.setPercentage(100*pevt.loaded/pevt.total);
-			}
 			var reader = new FileReader();
 			var breader = new FileReader();
 			if (reader) {
@@ -956,10 +945,25 @@ Paint.Canvas = function(object_id, painter) {
 				breader.onload = function(e) {
 					computedhash = b64_md5(e.target.result);
 					if (keycache[computedhash] === undefined) {
+						var xhr = new XMLHttpRequest;
+						var up = xhr.upload;
+						var uploadbar = new Paint.ProgressBar(containerElm);
+						xhr.onload = function(xevt) {
+							var obj = JSON.parse(xhr.responseText);
+							loadedkey = obj.key;
+							cacheClientImage();
+							painter.sendImageDrop(obj.key, {x: evt.offsetX, y: evt.offsetY});
+							bar.Remove();
+						}
+						up.onprogress = function(pevt) {
+							bar.setPercentage(100*pevt.loaded/pevt.total);
+						}
 						xhr.open('post', painter.room_name+'/upload', true);
 						xhr.setRequestHeader('X-File-Size', file.fileSize);
 						xhr.setRequestHeader('X-File-Name', file.fileName);
 						xhr.send(file);
+						
+						uploadbar.setRelativePos(evt.offsetX, evt.offsetY);
 					} 
 					else {
 						painter.sendImageDrop(keycache[computedhash], {x: evt.offsetX, y: evt.offsetY});
@@ -968,10 +972,6 @@ Paint.Canvas = function(object_id, painter) {
 				reader.readAsDataURL(file);
 				breader.readAsBinaryString(file);
 			}
-			
-			
-			var bar = new Paint.ProgressBar(containerElm);
-			bar.setRelativePos(evt.offsetX, evt.offsetY);
 			
 			dragend();
 			return false;
