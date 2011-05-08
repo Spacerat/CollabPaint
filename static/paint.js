@@ -802,7 +802,7 @@ Paint.ProgressBar = function(parent) {
 	
 	this.setPercentage = function(p) {
 		$(progress).animate({
-			width: p+"%";
+			width: p+"%"
 		}, 300);
 		progress.style.width = p+"%";
 	}
