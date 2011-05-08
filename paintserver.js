@@ -71,6 +71,7 @@ var Room = function(url, rooms) {
     	doc.Free();
     	doc = null;
     	images = null;
+    	fs.rmdir(roomcacheurl);
     	
     };
     var extend_time = function(time) {

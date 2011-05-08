@@ -784,6 +784,36 @@ Paint.Painter = function() {
 	}
 }
 
+Paint.ProgressBar = function(parent) {
+	if (!parent) parent = document.body;
+	var progbox = document.createElement('div');
+	var progress = document.createElement('div');
+	progbox.className = 'progbox';
+	progress.className = 'progress';
+	progbox.appendChild(progress);
+	parent.appendChild(progbox);
+	
+	this.setPercentage = function(p) {
+		progress.style.width = p+"%";
+	}
+	
+	this.setAbsolutePos = function(x, y) {
+		progbox.style.position = 'absolute';
+		progbox.style.left = x+"px";
+		progbox.style.top = y+"px";
+		progbox.style.zIndex = "100";
+	}
+	this.setRelativePos = function(x, y) {
+		progbox.style.position = 'relative';
+		progbox.style.left = (x - progbox.offsetLeft)+"px";
+		progbox.style.top = (y - progbox.offsetTop)+"px";
+		progbox.style.zIndex = "100";
+	}	
+	this.Remove = function() {
+		parent.removeChild(progbox);
+	}
+}
+
 Paint.Canvas = function(object_id, painter) {
 	var containerElm;
 	var layersElm;
@@ -885,12 +915,18 @@ Paint.Canvas = function(object_id, painter) {
 			xhr.onload = function(xevt) {
 				var obj = JSON.parse(xhr.responseText);
 				painter.sendImageDrop(obj.key, {x: evt.offsetX, y: evt.offsetY});
+				bar.Remove();
+			}
+			xhr.onprogress = function(pevt) {
+				bar.setPercentage(100*pevt.loaded/pevt.total);
 			}
 			xhr.open('post', painter.room_name+'/upload', true);
 			xhr.setRequestHeader('X-File-Size', file.fileSize);
 			xhr.setRequestHeader('X-File-Name', file.fileName);
 			xhr.send(file);
-			console.log(file);
+			var bar = new Paint.ProgressBar(containerElm);
+			bar.setRelativePos(evt.offsetX, evt.offsetY);
+			
 			dragend();
 			return false;
 		}, false)

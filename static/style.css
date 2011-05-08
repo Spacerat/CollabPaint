@@ -137,6 +137,18 @@ h2 {
 	padding-left: 0;
 }
 
+.progbox {
+	width: 200px;
+	height: 20px;
+	border: thin black solid;
+	padding: 1px;
+}
+
+.progress {
+	background-color: green;
+	height: 100%;
+}
+
 /* Canvas */
 
 button > img {
