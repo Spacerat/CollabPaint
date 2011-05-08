@@ -917,7 +917,7 @@ Paint.Canvas = function(object_id, painter) {
 				painter.sendImageDrop(obj.key, {x: evt.offsetX, y: evt.offsetY});
 				bar.Remove();
 			}
-			xhr.onprogress = function(pevt) {
+			up.onprogress = function(pevt) {
 				console.log(pevt, 100*pevt.loaded/pevt.total);
 				
 				bar.setPercentage(100*pevt.loaded/pevt.total);

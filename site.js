@@ -63,6 +63,9 @@ app.get('/paint/:id', function(req, res) {
     });
 });
 
+
+
+
 app.on('data', function(chunk) {
 	console.log(chunk);
 });
@@ -70,14 +73,16 @@ app.on('data', function(chunk) {
 
 app.post('/paint/:id/upload', function(req, res) {
 	var size = req.headers['content-length'];
-	
+	console.log(res.write);
 	var buf = new Buffer(parseInt(size, 10));
 	var pos = 0;
+	
 	
 	//req.setEncoding('binary');
 	req.on('data', function(chunk) {
 		chunk.copy(buf, pos);
 		pos += chunk.length;
+		console.log("chunk");
 	});
 	req.on('end', function() {
 		paintserver.uploadImage(req, req.params.id, buf, function(status, url) {
