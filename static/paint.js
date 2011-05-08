@@ -22,15 +22,6 @@ Paint = {
 	}
 };
 
-//Classes
-Paint.tools.Pointer = function(data) {
-
-}
-Paint.tools.Pointer.UI = function() {
-	this.elements = [];
-	this.cursor = "auto";
-}
-
 Paint.tools.Brush = function(data) {
 	var points = data.points;
 	var pos = data.pos;
@@ -113,6 +104,68 @@ Paint.tools.Brush.UI = function() {
 	this.cursor = "crosshair";
 };
 
+Paint.tools.Eraser = function(data) {
+	var points = data.points;
+	var pos = data.pos;
+	this.name = "Eraser";
+	
+	if (points == null && pos == null) {
+		throw "Error";
+	}
+	else if (points == null) {
+		points = [];
+		points.push(pos);
+	}
+	else {
+		pos = points[0];
+	}
+	var lineWidth = data.lineWidth || Paint.settings.Eraser.size.getValue();
+	
+	this.Render = function(layer) {
+		var ctx = layer.canvasElm.getContext("2d");
+		ctx.beginPath();
+		ctx.moveTo(points[0].x, points[0].y);
+		
+		for (var i = 1; i < points.length; i++) {
+			ctx.lineTo(points[i].x, points[i].y)		
+		}
+		
+		ctx.moveTo(points[0].x, points[0].y);
+		ctx.closePath();
+		ctx.lineCap = "round";
+		ctx.lineJoin = "round";
+		ctx.lineWidth = lineWidth;
+		ctx.globalCompositeOperation = 'copy';
+		ctx.strokeStyle = "rgba(0, 0, 0, 0)";
+		ctx.stroke();
+		ctx.globalCompositeOperation = 'source-over';
+	}
+	
+	this.MouseMove = function(pos, layer) {
+		points.push(pos);
+		layer.Clear();
+		this.Render(layer);
+	}
+	
+	this.MouseUp = function(){};
+	
+	this.getData = function() {
+		return {
+			pos: pos,
+			lineWidth: lineWidth,
+			points: points
+		};
+	}
+}
+Paint.tools.Eraser.UI = function() {
+	this.size = Paint.ui.slider(1, 100, 20);
+	this.elements = [
+		Paint.ui.label("Size:", "strong")
+		,this.size
+	];
+	this.cursor = "crosshair";
+};
+
 Paint.tools.Line = function(data) {
 	this.name = "Line";
 	var pos = data.pos;
@@ -158,6 +211,15 @@ Paint.tools.Line.UI = function() {
 	];
 	this.cursor = "crosshair";
 };
+
+//Classes
+Paint.tools.Pointer = function(data) {
+
+}
+Paint.tools.Pointer.UI = function() {
+	this.elements = [];
+	this.cursor = "auto";
+}
 
 /*
 Paint.tools.Tube = function(data) {
@@ -912,6 +974,7 @@ Paint.Canvas = function(object_id, painter) {
 			temp_layer.Clear();
 			var ctx = temp_layer.canvasElm.getContext('2d');
 			var pa = ctx.globalAlpha;
+			ctx.lineWidth = 2;
 			ctx.globalAlpha = 1.0;
 			ctx.fillStyle = "black";
 			ctx.strokeStyle = "black";

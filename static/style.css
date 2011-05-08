@@ -174,7 +174,7 @@ button > img {
 #paint_canvas {
 	overflow: scroll;
 	height: 100px;
-	background-color: white;
+	background: white url(/grid.png) repeat;
 	
 }
 
