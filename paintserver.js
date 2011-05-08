@@ -71,8 +71,14 @@ var Room = function(url, rooms) {
     	doc.Free();
     	doc = null;
     	images = null;
-    	fs.rmdir(roomcacheurl);
     	
+    	fs.readdir(roomcacheurl, function(err, files) {
+    		files.forEach(function(file) {
+    			fs.unlinkSync(roomcacheurl+'/'+file);
+    		});
+    		fs.rmdirSync(roomcacheurl);
+    	});
+    	clearTimeout(timeout);
     };
     var extend_time = function(time) {
     	time = time || timeout_time;
