@@ -81,7 +81,7 @@ var Room = function(url, rooms) {
     }
     
     var roomhash = crypto.createHash('md5');
-    var roomcacheurl = 'static/roomcache/'+roomhash.digest('base64');
+    var roomcacheurl = 'static/roomcache/'+roomhash.digest('hex');
     fs.mkdir(roomcacheurl, '0777');
     
     this.member_count = 0;
@@ -178,7 +178,7 @@ var Room = function(url, rooms) {
     this.addImage = function(req, buf, cb) {
 		var hash = crypto.createHash('md5');
 		hash.update(buf);
-		var key = hash.digest('base64');
+		var key = hash.digest('hex');
 		var ext = req.headers['x-file-name'];
 		ext = ext.substr(ext.lastIndexOf('.'));
 		if (images[key] !== undefined) {
