@@ -946,8 +946,8 @@ Paint.Canvas = function(object_id, painter) {
 			}
 			
 			var file = evt.dataTransfer.files[0];
-			if (file.fileSize > 1048576) {
-				alert("File too large. Image uploads are limited to 1 MB.");
+			if (file.fileSize > 524288) {
+				alert("File too large. Image uploads are limited to 512kB.");
 				return;
 			}
 			if (file.type.indexOf('image/') !== 0) {
