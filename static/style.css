@@ -120,13 +120,13 @@ h2 {
 }
 
 #users {
-	position: fixed;
+	position: absolute;
 	background-color: rgba(255, 255, 255, 0.9);
 	border: thin #DDD solid;
 	border-top: none;
 	min-width: 100px;
 	word-wrap: break-word;
-	
+	z-index: 200;
 	-webkit-border-bottom-right-radius: 07px;
 	-webkit-border-bottom-left-radius: 7px;
 	-moz-border-radius-bottomright: 07px;
