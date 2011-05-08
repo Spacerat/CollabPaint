@@ -246,7 +246,7 @@ this.Server = function(app) {
     	var clientid = req.headers['x-client-id'];
     	var client = room.clientById(clientid);
     	if (client) {
-    		callback(400);
+    		callback(403);
     		return;
     	}
     	room.addImage(req, buf, function(id){
