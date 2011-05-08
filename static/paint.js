@@ -798,8 +798,12 @@ Paint.ProgressBar = function(parent) {
 	progress.className = 'progress';
 	progbox.appendChild(progress);
 	parent.appendChild(progbox);
+	progress.innerText = "Uploading...";
 	
 	this.setPercentage = function(p) {
+		$(progress).animate({
+			width: p+"%";
+		}, 300);
 		progress.style.width = p+"%";
 	}
 	this.setPercentage(0);
@@ -896,6 +900,23 @@ Paint.Canvas = function(object_id, painter) {
 			evt.preventDefault();
 			evt.dataTransfer.dropEffect = "copy";
 			$(temp_layer.canvasElm).css('background', '#BBB').css('opacity', '0.5');
+			temp_layer.Clear();
+			var ctx = temp_layer.canvasElm.getContext('2d');
+			var pa = ctx.globalAlpha;
+			ctx.globalAlpha = 1.0;
+			ctx.fillStyle = "black";
+			ctx.strokeStyle = "black";
+			ctx.font = "20pt Arial";
+			ctx.fillText("Drop to upload", evt.offsetX + 10, evt.offsetY+ 30);
+			ctx.beginPath();
+			ctx.moveTo(evt.offsetX, evt.offsetY);
+			ctx.lineTo(evt.offsetX + 200, evt.offsetY);
+			ctx.moveTo(evt.offsetX, evt.offsetY);
+			ctx.lineTo(evt.offsetX, evt.offsetY + 200);
+			ctx.closePath();
+			ctx.stroke();
+			
+			ctx.globalAlpha = pa;
 			return false;			
 		}, false);
 		var dragend = function(evt) {
@@ -906,6 +927,7 @@ Paint.Canvas = function(object_id, painter) {
 	
 		var keycache = {};	
 		containerElm.addEventListener('drop', function(evt) {
+			temp_layer.Clear();
 			evt.stopPropagation();
 			evt.preventDefault();
 
@@ -915,8 +937,8 @@ Paint.Canvas = function(object_id, painter) {
 			}
 			
 			var file = evt.dataTransfer.files[0];
-			if (file.fileSize > 4194304) {
-				alert("File too large. Image uploads are limited to 4 MB.");
+			if (file.fileSize > 1048576) {
+				alert("File too large. Image uploads are limited to 1 MB.");
 				return;
 			}
 			if (file.type.indexOf('image/') !== 0) {
@@ -968,7 +990,7 @@ Paint.Canvas = function(object_id, painter) {
 						xhr.setRequestHeader('X-File-Name', file.fileName);
 						xhr.send(file);
 						
-						uploadbar.setRelativePos(evt.offsetX, evt.offsetY);
+						uploadbar.setRelativePos(evt.offsetX, evt.offsetY + 20);
 					} 
 					else {
 						painter.sendImageDrop(keycache[computedhash], pos);

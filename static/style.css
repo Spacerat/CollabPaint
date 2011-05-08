@@ -145,7 +145,8 @@ h2 {
 }
 
 .progress {
-	background-color: green;
+	/*background-color: green;*/
+	background-image: url(/progress.png)
 	height: 100%;
 }
 
