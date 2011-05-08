@@ -798,7 +798,7 @@ Paint.ProgressBar = function(parent) {
 	progress.className = 'progress';
 	progbox.appendChild(progress);
 	parent.appendChild(progbox);
-	//progress.innerText = "Uploading...";
+
 	var pos = 0;
 	var m = setInterval(function() {
 		pos += 1;
@@ -806,9 +806,12 @@ Paint.ProgressBar = function(parent) {
 	}, 50);
 	
 	this.setPercentage = function(p) {
+		/*
 		$(progress).animate({
 			width: p+"%"
 		}, 300);
+		*/
+		progress.style.width = p+"%";
 	}
 	this.setPercentage(0);
 	
