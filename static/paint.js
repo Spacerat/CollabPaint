@@ -908,6 +908,11 @@ Paint.Canvas = function(object_id, painter) {
 		containerElm.addEventListener('drop', function(evt) {
 			evt.stopPropagation();
 			evt.preventDefault();
+
+			var pos = {
+				x: evt.layerX,
+				y: evt.layerY
+			}
 			
 			var file = evt.dataTransfer.files[0];
 			if (file.fileSize > 4194304) {
@@ -952,8 +957,8 @@ Paint.Canvas = function(object_id, painter) {
 							var obj = JSON.parse(xhr.responseText);
 							loadedkey = obj.key;
 							cacheClientImage();
-							painter.sendImageDrop(obj.key, {x: evt.offsetX, y: evt.offsetY});
-							bar.Remove();
+							painter.sendImageDrop(obj.key, pos);
+							uploadbar.Remove();
 						}
 						up.onprogress = function(pevt) {
 							bar.setPercentage(100*pevt.loaded/pevt.total);
@@ -966,7 +971,7 @@ Paint.Canvas = function(object_id, painter) {
 						uploadbar.setRelativePos(evt.offsetX, evt.offsetY);
 					} 
 					else {
-						painter.sendImageDrop(keycache[computedhash], {x: evt.offsetX, y: evt.offsetY});
+						painter.sendImageDrop(keycache[computedhash], pos);
 					}
 				}
 				reader.readAsDataURL(file);
