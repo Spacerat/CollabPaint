@@ -1062,7 +1062,7 @@ Paint.Canvas = function(object_id, painter) {
 						xhr.setRequestHeader('X-File-Name', file.fileName);
 						xhr.send(file);
 						
-						uploadbar.setRelativePos(evt.offsetX, evt.offsetY + 20);
+						uploadbar.setRelativePos(pos.x, pos.y + 20);
 					} 
 					else {
 						painter.sendImageDrop(keycache[computedhash], pos);
