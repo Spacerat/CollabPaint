@@ -73,6 +73,9 @@ app.on('data', function(chunk) {
 
 app.post('/paint/:id/upload', function(req, res) {
 	var size = req.headers['content-length'];
+	if (size > 1048576) {
+		res.send("Image too large.", 403);
+	}
 	var buf = new Buffer(parseInt(size, 10));
 	var pos = 0;
 	
