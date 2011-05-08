@@ -631,7 +631,7 @@ Paint.Painter = function() {
 		});
 		
 		var usc = $("#usercount");
-		var usrs = $('#users')
+		var usrs = $('#users');
 		usrs.toggle();
 		usc.mouseover(function(evt) {
 
@@ -979,12 +979,12 @@ Paint.Canvas = function(object_id, painter) {
 			ctx.fillStyle = "black";
 			ctx.strokeStyle = "black";
 			ctx.font = "20pt Arial";
-			ctx.fillText("Drop to upload", evt.offsetX + 10, evt.offsetY+ 30);
+			ctx.fillText("Drop to upload", evt.clientX + 10, evt.clientY+ 30);
 			ctx.beginPath();
-			ctx.moveTo(evt.offsetX, evt.offsetY);
-			ctx.lineTo(evt.offsetX + 200, evt.offsetY);
-			ctx.moveTo(evt.offsetX, evt.offsetY);
-			ctx.lineTo(evt.offsetX, evt.offsetY + 200);
+			ctx.moveTo(evt.clientX, evt.clientY);
+			ctx.lineTo(evt.clientX + 200, evt.clientY);
+			ctx.moveTo(evt.clientX, evt.clientY);
+			ctx.lineTo(evt.clientX, evt.clientY + 200);
 			ctx.closePath();
 			ctx.stroke();
 			
