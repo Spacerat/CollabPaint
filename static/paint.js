@@ -918,6 +918,8 @@ Paint.Canvas = function(object_id, painter) {
 				bar.Remove();
 			}
 			xhr.onprogress = function(pevt) {
+				console.log(pevt, 100*pevt.loaded/pevt.total);
+				
 				bar.setPercentage(100*pevt.loaded/pevt.total);
 			}
 			xhr.open('post', painter.room_name+'/upload', true);
