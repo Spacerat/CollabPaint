@@ -761,6 +761,11 @@ Paint.Painter = function() {
 		}
 	}
 	
+	
+	this.addImage = function(key, image) {
+		images[key] = image;
+	}
+	
 	this.getLayers = function(){return layers;};
 	
 	this.getCurrentLayer = function() {return current_layer;};
@@ -796,6 +801,7 @@ Paint.ProgressBar = function(parent) {
 	this.setPercentage = function(p) {
 		progress.style.width = p+"%";
 	}
+	this.setPercentage(0);
 	
 	this.setAbsolutePos = function(x, y) {
 		progbox.style.position = 'absolute';
@@ -896,6 +902,8 @@ Paint.Canvas = function(object_id, painter) {
 		}
 		containerElm.addEventListener('dragend', dragend, false);
 		containerElm.addEventListener('dragleave', dragend, false);
+	
+		var keycache = {};	
 		containerElm.addEventListener('drop', function(evt) {
 			evt.stopPropagation();
 			evt.preventDefault();
@@ -912,20 +920,56 @@ Paint.Canvas = function(object_id, painter) {
 			
 			var xhr = new XMLHttpRequest;
 			var up = xhr.upload;
+			var loadedimage = null;
+			var loadedkey = null;
+			var computedhash = null;
+			
+			var cacheClientImage = function() {
+				if (loadedkey && loadedimage && computedhash) {
+					painter.addImage(loadedkey, loadedimage);
+					keycache[computedhash] = loadedkey;
+				}
+			}
+			
 			xhr.onload = function(xevt) {
 				var obj = JSON.parse(xhr.responseText);
+				loadedkey = obj.key;
+				cacheClientImage();
 				painter.sendImageDrop(obj.key, {x: evt.offsetX, y: evt.offsetY});
 				bar.Remove();
 			}
 			up.onprogress = function(pevt) {
-				console.log(pevt, 100*pevt.loaded/pevt.total);
-				
 				bar.setPercentage(100*pevt.loaded/pevt.total);
 			}
-			xhr.open('post', painter.room_name+'/upload', true);
-			xhr.setRequestHeader('X-File-Size', file.fileSize);
-			xhr.setRequestHeader('X-File-Name', file.fileName);
-			xhr.send(file);
+			var reader = new FileReader();
+			var breader = new FileReader();
+			if (reader) {
+				reader.onload = (function(e) {
+					var img = new Image();
+					img.onload = function() {
+						loadedimage = img;
+						cacheClientImage();						
+					}
+					img.src = e.target.result;
+
+				});
+				breader.onload = function(e) {
+					computedhash = b64_md5(e.target.result);
+					if (keycache[computedhash] === undefined) {
+						xhr.open('post', painter.room_name+'/upload', true);
+						xhr.setRequestHeader('X-File-Size', file.fileSize);
+						xhr.setRequestHeader('X-File-Name', file.fileName);
+						xhr.send(file);
+					} 
+					else {
+						painter.sendImageDrop(keycache[computedhash], {x: evt.offsetX, y: evt.offsetY});
+					}
+				}
+				reader.readAsDataURL(file);
+				breader.readAsBinaryString(file);
+			}
+			
+			
 			var bar = new Paint.ProgressBar(containerElm);
 			bar.setRelativePos(evt.offsetX, evt.offsetY);
 			
