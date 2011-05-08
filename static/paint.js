@@ -961,7 +961,7 @@ Paint.Canvas = function(object_id, painter) {
 							uploadbar.Remove();
 						}
 						up.onprogress = function(pevt) {
-							bar.setPercentage(100*pevt.loaded/pevt.total);
+							uploadbar.setPercentage(100*pevt.loaded/pevt.total);
 						}
 						xhr.open('post', painter.room_name+'/upload', true);
 						xhr.setRequestHeader('X-File-Size', file.fileSize);
