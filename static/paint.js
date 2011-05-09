@@ -981,6 +981,7 @@ Paint.Canvas = function(object_id, painter) {
 			ctx.font = "20pt Arial";
 			ctx.fillText("Drop to upload", evt.clientX + 10, evt.clientY+ 30);
 			ctx.beginPath();
+			console.log(evt);
 			ctx.moveTo(evt.clientX, evt.clientY);
 			ctx.lineTo(evt.clientX + 200, evt.clientY);
 			ctx.moveTo(evt.clientX, evt.clientY);
