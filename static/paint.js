@@ -979,13 +979,12 @@ Paint.Canvas = function(object_id, painter) {
 			ctx.fillStyle = "black";
 			ctx.strokeStyle = "black";
 			ctx.font = "20pt Arial";
-			ctx.fillText("Drop to upload", evt.clientX + 10, evt.clientY+ 30);
+			ctx.fillText("Drop to upload", evt.layerX + 10, evt.layerY+ 30);
 			ctx.beginPath();
-			console.log(evt);
-			ctx.moveTo(evt.clientX, evt.clientY);
-			ctx.lineTo(evt.clientX + 200, evt.clientY);
-			ctx.moveTo(evt.clientX, evt.clientY);
-			ctx.lineTo(evt.clientX, evt.clientY + 200);
+			ctx.moveTo(evt.layerX, evt.layerY);
+			ctx.lineTo(evt.layerX + 200, evt.layerY);
+			ctx.moveTo(evt.layerX, evt.layerY);
+			ctx.lineTo(evt.layerX, evt.layerY + 200);
 			ctx.closePath();
 			ctx.stroke();
 			
