@@ -108,7 +108,7 @@ Paint.tools.Eraser = function(data) {
 	var points = data.points;
 	var pos = data.pos;
 	this.name = "Eraser";
-	
+	var alpha = data.alpha | Paint.settings.globals.opacity.getValue()/255.0;
 	if (points == null && pos == null) {
 		throw "Error";
 	}
@@ -135,8 +135,8 @@ Paint.tools.Eraser = function(data) {
 		ctx.lineCap = "round";
 		ctx.lineJoin = "round";
 		ctx.lineWidth = lineWidth;
-		ctx.globalCompositeOperation = 'copy';
-		ctx.strokeStyle = "rgba(0, 0, 0, 0)";
+		ctx.globalCompositeOperation = 'destination-out';
+		ctx.strokeStyle = "rgba(0, 0, 0, 255)";
 		ctx.stroke();
 		ctx.globalCompositeOperation = 'source-over';
 	}
