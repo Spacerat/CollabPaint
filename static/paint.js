@@ -145,7 +145,6 @@ Paint.tools.Eraser = function(data) {
 		ctx.globalCompositeOperation = 'destination-out';
 		ctx.strokeStyle = "rgba(0, 0, 0, 255)";
 		ctx.globalAlpha = alpha;
-		console.log(ctx.globalAlpha);
 		ctx.stroke();
 		ctx.globalCompositeOperation = 'source-over';
 		ctx.globalAlpha = 1;
