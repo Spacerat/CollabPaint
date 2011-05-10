@@ -153,7 +153,8 @@ Paint.tools.Eraser = function(data) {
 		return {
 			pos: pos,
 			lineWidth: lineWidth,
-			points: points
+			points: points,
+			opacity: opacity
 		};
 	}
 }
