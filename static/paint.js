@@ -137,8 +137,10 @@ Paint.tools.Eraser = function(data) {
 		ctx.lineWidth = lineWidth;
 		ctx.globalCompositeOperation = 'destination-out';
 		ctx.strokeStyle = "rgba(0, 0, 0, 255)";
+		ctx.globalAlpha = alpha;
 		ctx.stroke();
 		ctx.globalCompositeOperation = 'source-over';
+		ctx.globalAlpha = 1;
 	}
 	
 	this.MouseMove = function(pos, layer) {
