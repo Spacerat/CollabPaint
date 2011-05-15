@@ -702,8 +702,13 @@ Paint.Painter = function() {
 					n.src = command.url;
 					n.onload = function() {
 						images[command.key] = n;
-						canv.Clear();
-						canv.RenderHistory(that);
+						if (command.rnd_id === last_sent_id) {
+							ctx.drawImage(n, command.pos.x, command.pos.y);
+						}
+						else {
+							canv.Clear();
+							canv.RenderHistory(that);
+						}
 					}
 				}
 				break;
@@ -826,11 +831,13 @@ Paint.Painter = function() {
 	
 	this.sendImageDrop = function(key, pos) {
 		if (socket) {
+			last_sent_id = tools.randRangeInt(1,1000);
 			socket.send({'command': {
 				cmd: 'image',
 				key: key,
 				pos: pos,
-				layerid: current_layer.id
+				layerid: current_layer.id,
+				rnd_id: last_sent_id
 			}});
 		}
 	}
