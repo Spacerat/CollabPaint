@@ -692,7 +692,7 @@ Paint.Painter = function() {
 			case 'image':
 				var canv = layers[command.layerid];
 				if (is_new) {layers[command.layerid].addHistory(command);}
-				console.log(images[command.key]);
+				console.log("Images["+command.key+"] = ", images[command.key]);
 				if (images[command.key] !== undefined) {
 					var ctx = canv.canvasElm.getContext('2d');
 					ctx.drawImage(images[command.key], command.pos.x, command.pos.y);
@@ -702,6 +702,7 @@ Paint.Painter = function() {
 					n.src = command.url;
 					n.onload = function() {
 						images[command.key] = n;
+						console.log("Images["+command.key+"] = ", images[command.key]);
 						if (command.rnd_id === last_sent_id) {
 							ctx.drawImage(n, command.pos.x, command.pos.y);
 						}
