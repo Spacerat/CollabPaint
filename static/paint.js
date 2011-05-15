@@ -692,8 +692,8 @@ Paint.Painter = function() {
 			case 'image':
 				var canv = layers[command.layerid];
 				if (is_new) {layers[command.layerid].addHistory(command);}
-				
-				if (images[command.key]) {
+				console.log(images[command.key];
+				if (images[command.key] !== undefined) {
 					var ctx = canv.canvasElm.getContext('2d');
 					ctx.drawImage(images[command.key], command.pos.x, command.pos.y);
 				}
