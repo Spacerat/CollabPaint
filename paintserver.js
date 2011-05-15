@@ -58,13 +58,15 @@ var Room = function(url, rooms) {
     var members = [];
  	var doc = new paint.Document();   
     var max_members = 255;
-    var timeout_time = 1000 * 60 * 60; 
+    var timeout_time = 1000 * 60; 
     var timeout;
     var images = {};
     var timeout_func = function() {
-    	for (var c in members) {
-    		members[c].Disconnect("The room has timed out.");
-    	}
+    	console.log("Timeout");
+    	members.forEach(function(c) {
+    		console.log(c);
+    		c.Disconnect("The room has timed out.");
+    	});
     	//Delete room
     	delete rooms[url];
     	members = [];
