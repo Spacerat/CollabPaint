@@ -963,7 +963,7 @@ Paint.Canvas = function(object_id, painter) {
 		
 		if ('ontouchstart' in window) {
 			alert("Touching!");
-			function preventevent = function(func) {
+			var preventevent = function(func) {
 				return function(evt) {
 					evt.preventDefault();
 					func(evt);
