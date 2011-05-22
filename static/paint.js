@@ -962,7 +962,6 @@ Paint.Canvas = function(object_id, painter) {
 		$('#vertical_stretch').resize(resfunc);
 		
 		if ('ontouchstart' in window) {
-			alert("Touching!");
 			var tevent = function(func, preventdefault) {
 				return function(evt) {
 					if (preventdefault) evt.preventDefault();
@@ -971,7 +970,7 @@ Paint.Canvas = function(object_id, painter) {
 			}
 			temp_layer.canvasElm.addEventListener('touchstart', tevent(downEvent, true), false);
 			temp_layer.canvasElm.addEventListener('touchmove', tevent(moveEvent, true), false);
-			document.body.addEventListener('touchend', tevent(upEvent, false), false);
+			temp_layer.canvasElm.addEventListener('touchend', upEvent, false);
 		}
 		else {
 			temp_layer.canvasElm.addEventListener('mousedown', downEvent, false);
