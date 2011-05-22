@@ -960,10 +960,18 @@ Paint.Canvas = function(object_id, painter) {
 		resfunc();
 		$(window).resize(resfunc);
 		$('#vertical_stretch').resize(resfunc);
+		
 		if ('ontouchstart' in window) {
-			document.addEventListener("touchstart", downEvent, false);
-			document.body.addEventListener('touchmove',moveEvent , false);
-			document.body.addEventListener('touchend', upEvent, false);
+			alert("Touching!");
+			function preventevent = function(func) {
+				return function(evt) {
+					evt.preventDefault();
+					func(evt);
+				}
+			}
+			document.addEventListener("touchstart", preventevent(downEvent), false);
+			document.body.addEventListener('touchmove',preventevent(moveEvent), false);
+			document.body.addEventListener('touchend', preventevent(upEvent), false);
 		}
 		else {
 			temp_layer.canvasElm.addEventListener('mousedown', downEvent, false);
