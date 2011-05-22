@@ -969,9 +969,9 @@ Paint.Canvas = function(object_id, painter) {
 					func(evt);
 				}
 			}
-			temp_layer.addEventListener("touchstart", preventevent(downEvent), false);
-			temp_layer.addEventListener('touchmove',preventevent(moveEvent), false);
-			document.body.addEventListener('touchend', upEvent, false);
+			//temp_layer.addEventListener('touchstart', preventevent(downEvent), false);
+			//temp_layer.addEventListener('touchmove', preventevent(moveEvent), false);
+			//document.body.addEventListener('touchend', upEvent, false);
 		}
 		else {
 			temp_layer.canvasElm.addEventListener('mousedown', downEvent, false);
