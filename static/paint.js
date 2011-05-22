@@ -963,15 +963,15 @@ Paint.Canvas = function(object_id, painter) {
 		
 		if ('ontouchstart' in window) {
 			alert("Touching!");
-			var preventevent = function(func) {
+			var tevent = function(func, preventdefault) {
 				return function(evt) {
-					evt.preventDefault();
-					func(evt);
+					if (preventdefault) evt.preventDefault();
+					func(evt.touches[0]);
 				}
 			}
-			//temp_layer.addEventListener('touchstart', preventevent(downEvent), false);
-			//temp_layer.addEventListener('touchmove', preventevent(moveEvent), false);
-			//document.body.addEventListener('touchend', upEvent, false);
+			temp_layer.canvasElm.addEventListener('touchstart', tevent(downEvent, true), false);
+			temp_layer.canvasElm.addEventListener('touchmove', tevent(moveEvent, true), false);
+			document.body.addEventListener('touchend', tevent(upEvent, false), false);
 		}
 		else {
 			temp_layer.canvasElm.addEventListener('mousedown', downEvent, false);
