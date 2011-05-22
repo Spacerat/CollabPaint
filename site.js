@@ -48,18 +48,27 @@ app.get('/rooms', function(req, res) {
 	}
 });
 
+function paintRoom(hidden) {
+	return function paintRoom(req, res, next) {
+		req.roomname = req.params.id;
+		if (hidden) req.roomname="hidden: "+req.roomname;
+		req.painthead = templater.render(fs.readFileSync('views/paint_head.html').toString(), {locals: {room: req.roomname}});	
+		next();
+	}
+}
 //Index, containing the collab box.
-app.get('/paint/:id', function(req, res) {
-
-	var roomname = req.params.id;
-
-	//var painthead = templater.compile(fs.readFileSync('views/paint_head.html').toString());
-	//var head = painthead({room: roomname});
-	var head = templater.render(fs.readFileSync('views/paint_head.html').toString(), {locals: {room: roomname}});
+app.get('/paint/:id', paintRoom(false), function(req, res) {
     res.render('paint', {
-    	pagetitle: roomname,
+    	pagetitle: req.roomname,
     	sitetitle: "CollabPaint",
-    	head: head
+    	head: req.painthead,
+    });
+});
+app.get('/hidden/:id', paintRoom(true), function(req, res) {
+    res.render('paint', {
+    	pagetitle: req.roomname,
+    	sitetitle: "CollabPaint",
+    	head: req.painthead,
     });
 });
 

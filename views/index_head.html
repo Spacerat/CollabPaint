@@ -11,9 +11,11 @@
 		txt = encodeURIComponent(txt);
 		if (txt) {
 			if ($('#newroomhidden:checked').val()) {
-				txt = 'hidden_'+txt;
+				txt = '/hidden/' + txt;
 			}
-			txt = '/paint/' + txt;
+			else {
+				txt = '/paint/' + txt;
+			}
 		}
 		
 		$('#newroomlink').text(txt);

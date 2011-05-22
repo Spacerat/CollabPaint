@@ -51,6 +51,15 @@ paint.Document = function() {
 	
 }
 
+function quicklog(s,f) {
+  var logpath = "/tmp/"+f+".log";
+  s = s.toString().replace(/\r\n|\r/g, '\n'); // hack
+  var fd = fs.openSync(logpath, 'a+', 0666);
+  fs.writeSync(fd, s + '\n');
+  fs.closeSync(fd);
+}
+
+
 var Room = function(url, rooms) {
 	var chat = [];
 	
@@ -61,10 +70,19 @@ var Room = function(url, rooms) {
     var timeout_time = 1000 * 60 * 60; 
     var timeout;
     var images = {};
+    var closed=false;
     var timeout_func = function() {
+    	if (closed === true) {
+    		quicklog("Attempt to close already closed room "+url+"!", "close_errors");
+    		clearTimeout(timeout);
+    		return;
+    	}
+    	closed = true;
+    	
     	members.forEach(function(c) {
     		c.Disconnect("The room has timed out.");
     	});
+    	
     	//Delete room
     	delete rooms[url];
     	members = [];
