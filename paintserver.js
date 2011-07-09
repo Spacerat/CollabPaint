@@ -11,6 +11,13 @@ var fs = require('fs');
     anyone_join: bool,   //false
 }*/
 
+var isNumber = function(n) {
+  return !isNaN(parseFloat(n)) && isFinite(n);
+}
+var isInteger = function(n) {
+  return !isNaN(parseInt(n, 10)) && isFinite(n);
+}
+
 var ServerName = "CollabBox";
 
 var paint = {};
@@ -22,9 +29,60 @@ paint.Layer = function(name) {
 paint.Document = function() {
 	var history = [];
 	var layers = [];
+		
+	var validate_position = function(pos) {
+		
+		for (var n in pos) {
+			if (n == 'x' || n == 'y') {
+				if (isInteger(pos[n]) === false) {
+					return false;
+				}
+			}
+			else return false;
+		}
+		return true;
+	}
+	
+	var validate_points = function(points) {
+		for (var i = 0; i < points.length; i++) {
+			if (!validate_position(points[i])) return false;
+		}
+		return true;
+	}
+	
+	var validate = function(dict, name, checktype) {
+		var v = dict[name];
+		var err = '';
+		
+		checktype.split(" ").forEach(function(t) {
+			switch (t) {
+				case 'positive':
+					if (v < 0) err = 'value is not positive';
+					break;
+				case 'number':
+					if (!isNumber(v)) err = 'value is not a number';
+					break;
+				case 'integer':
+					if (!isInteger(v)) err = 'value is not an integer';
+					break;
+				case 'layerid':
+					if (layers[v] == null) err = 'a layer with id does not exist';
+					break;
+				case 'position':
+					if (!validate_position(v)) err = 'this value is an invalid position';
+					break;
+				case 'points':
+					if (!validate_points(v)) err = 'this value is an invalid point list';
+					break;
+			}
+		})
+		if (err.length > 0) {
+			throw "Invalid data "+v.toString()+" for "+name+". Expecting a \""+checktype+"\" value, but "+err+".";
+		}
+	}
 	
 	this.DoCommand = function(command) {
-
+		//var allowed_tools = ['Brush', 'Eraser', 'tool']
 		switch (command.cmd) {
 			case 'new_layer':
 				var name = command.params.name || ("Layer_"+(layers.length+1));
@@ -32,12 +90,44 @@ paint.Document = function() {
 				var l = new paint.Layer(name);
 				layers.push(l);
 				break;
-			default:
-				//TODO: Validate tool commands
+			case 'image':
+				//Image URL/key has already been validated
+				validate(command, 'layerid', 'layerid');
+				validate(command, 'pos', 'position');
 				break;
+			case 'tool':
+				if (layers[command.layerid] == null) throw "Invalid layerid";
+				switch (command.name) {
+					case 'Brush':
+						validate(command.data, 'pos', 'position');
+						validate(command.data, 'points', 'points');
+						validate(command.data, 'lineWidth', 'positive integer');
+						break;
+					case 'Eraser':
+						validate(command.data, 'pos', 'position');
+						validate(command.data, 'points', 'points');
+						validate(command.data, 'lineWidth', 'positive integer');
+						validate(command.data, 'alpha', 'positive number');
+						break;
+					case 'Line':
+						validate(command.data, 'pos', 'position');
+						validate(command.data, 'pos2', 'position');
+						validate(command.data, 'lineWidth', 'positive integer');
+						break;
+					case 'Shape':
+						validate(command.data, 'pos', 'position');
+						validate(command.data, 'pos2', 'position');
+						validate(command.data, 'strokeWidth', 'positive integer');
+						break;
+					default:
+						throw "Unidentified tool "+command.name;
+				}
+			default:
+				return false;
 		}
 		command.id = history.length;
 		history.push(command);
+		return true
 	}
 
 	this.getHistory = function() {
@@ -200,8 +290,11 @@ var Room = function(url, rooms) {
     			command.url = images[command.key].url;
     		}
     	}
-    	doc.DoCommand(command);
-    	extend_time();
+    	if (doc.DoCommand(command) === true) {
+    		extend_time();
+    		return true
+    	}
+    	
     }
     
     this.addImage = function(req, buf, cb) {
@@ -354,8 +447,13 @@ this.Server = function(app) {
             	//TODO: Validate commands.
             	var cmd = data.command;
             	var room = client.data.room;
-            	room.DoCommand(cmd);
-            	new Packet().Set('command', cmd).broadcastToRoom(client.listener, room);
+            	try {
+            		room.DoCommand(cmd)
+            		new Packet().Set('command', cmd).broadcastToRoom(client.listener, room);
+            	}
+            	catch (e) {
+            		console.log(e);
+            	} 
             }
             if ('chat' in data) {
             	//TODO: Check that msg is a string.
