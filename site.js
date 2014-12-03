@@ -6,7 +6,7 @@ var templater = require('ejs');
 var fs = require('fs');
 var partials = require('express-partials');
 
-var PORT = process.ENV.PORT || 8080;
+var PORT = process.env.PORT || 8080;
 var app = require('express')();
 var server = http.Server(app);
 
