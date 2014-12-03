@@ -1,13 +1,18 @@
 
 var paintserver = require("./paintserver");
-var http = require('http');
 var express = require('express');
+var http = require('http');
 var templater = require('ejs');
 var fs = require('fs');
+var partials = require('express-partials');
 
-var app = express.createServer();
+
+var app = require('express')();
+var server = http.Server(app);
+
 
 app.configure(function() {
+	app.use(partials());
     app.use(express.static(__dirname + '/static'));
     app.use(express.bodyParser());
     app.use(express.cookieParser());
@@ -15,7 +20,7 @@ app.configure(function() {
     
     app.set("view engine", "html");
     app.set("view options", {layout: true});
-    app.register( ".html", templater);
+    app.engine( ".html", templater.renderFile);
 });
 app.configure('development', function(){
     app.use(express.errorHandler({ dumpExceptions: true, showStack: true }));
@@ -106,6 +111,6 @@ app.post('/paint/:id/upload', function(req, res) {
 	});
 });
 
-app.listen(8765);
-paintserver.Server(app);
+server.listen(8765);
+paintserver.Server(server);
 

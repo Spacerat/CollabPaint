@@ -1,0 +1,14 @@
+{
+    "name": "collabPaint",
+    "version": "0.1.0",
+    "repository": {
+        "type": "git",
+        "url": "http://github.com/Spacerat/CollabPaint.git"
+    },
+    "dependencies": {
+        "ejs": "1.0.0",
+        "express-partials": "0.3.0",
+        "socket.io": "1.2.1",
+        "express": "3.1.x"
+    }
+}

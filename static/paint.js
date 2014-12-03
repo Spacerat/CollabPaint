@@ -716,7 +716,7 @@ Paint.Painter = function() {
 	
 	this.Connect = function(roomname) {
 		this.room_name = roomname;
-		socket = new io.Socket(null);
+		socket = new io();
 		socket.connect();
 		socket.on('connect', function() {
 			socket.send({'connect': {

@@ -122,6 +122,7 @@ paint.Document = function() {
 					default:
 						throw "Unidentified tool "+command.name;
 				}
+                break;
 			default:
 				return false;
 		}
@@ -337,8 +338,8 @@ var Room = function(url, rooms) {
 
 /* Server class.
 */
-this.Server = function(app) {
-    var socket = io.listen(app);
+this.Server = function(server) {
+    var socket = io(server);
     var rooms = {};
     
     fs.readdir('static/roomcache', function(err) {
@@ -403,7 +404,7 @@ this.Server = function(app) {
         };
         client.info = {
         	name: "Anon",
-        	id: client.listener.sessionId
+        	id: client.id
         }
         
         client.on('disconnect', function() {
