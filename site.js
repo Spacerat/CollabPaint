@@ -111,6 +111,6 @@ app.post('/paint/:id/upload', function(req, res) {
 	});
 });
 
-server.listen(8765);
+server.listen(80);
 paintserver.Server(server);
 

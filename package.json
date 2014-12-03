@@ -10,5 +10,8 @@
         "express-partials": "0.3.0",
         "socket.io": "1.2.1",
         "express": "3.1.x"
+    },
+    "scripts": {
+        "start": "node site.js"
     }
 }
