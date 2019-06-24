@@ -1,6 +1,5 @@
 
 var io = require('socket.io');
-var util = require('util');
 var Packet = require('./server_packet').Packet;
 var crypto = require('crypto');
 var fs = require('fs');
@@ -201,8 +200,17 @@ var Room = function(url, rooms) {
     }
     
     var roomhash = crypto.createHash('md5');
-    var roomcacheurl = 'static/roomcache/'+roomhash.digest('hex');
-    fs.mkdir(roomcacheurl, '0777');
+	var roomcacheurl = 'static/roomcache/'+roomhash.digest('hex');
+	
+	try {
+		fs.mkdirSync(roomcacheurl, '0777');
+	}
+	catch (e) {
+		if (e.code != 'EEXIST') {
+			throw err;
+		}
+	}
+    
     
     this.member_count = 0;
     
@@ -344,7 +352,7 @@ this.Server = function(server) {
     
     fs.readdir('static/roomcache', function(err) {
     	if (err) {
-    		fs.mkdir('static/roomcache', '0777');
+    		fs.mkdirSync('static/roomcache', '0777');
     	}
     });
     

@@ -2,40 +2,30 @@
 var paintserver = require("./paintserver");
 var express = require('express');
 var http = require('http');
-var templater = require('ejs');
+var ejs = require('ejs');
 var fs = require('fs');
 var partials = require('express-partials');
-
+var bodyParser = require('body-parser')
+var session = require('express-session')
 var PORT = process.env.PORT || 8080;
-var app = require('express')();
-var server = http.Server(app);
+var app = express();
 
 
-app.configure(function() {
-	app.use(partials());
-    app.use(express.static(__dirname + '/static'));
-    app.use(express.bodyParser());
-    app.use(express.cookieParser());
-    app.use(express.session({key:"joe", secret:"lolwut"}));
-    
-    app.set("view engine", "html");
-    app.set("view options", {layout: true});
-    app.engine( ".html", templater.renderFile);
-});
-app.configure('development', function(){
-    app.use(express.errorHandler({ dumpExceptions: true, showStack: true }));
-    app.use(express.logger());
-});
+app.use(partials());
+app.use(express.static(__dirname + '/static'));
+app.use(bodyParser.raw());
+app.use(session({key:"joe", secret:"lolwut", resave: false, saveUninitialized: true}));
 
-app.configure('production', function(){
-    app.use(express.errorHandler());
-});
+app.set("view engine", "html");
+app.set("view options", {layout: true});
+app.engine( ".html", ejs.renderFile);
+
 ////
 //Web Pages
 ////
 
 app.get('/', function(req, res) {
-	var head = templater.render(fs.readFileSync('views/index_head.html').toString());
+	var head = ejs.render(fs.readFileSync('views/index_head.html').toString());
 	res.render('index', {
 		sitetitle: "CollabPaint",
 		pagetitle: "",
@@ -57,7 +47,8 @@ function paintRoom(hidden) {
 	return function paintRoom(req, res, next) {
 		req.roomname = req.params.id;
 		if (hidden) req.roomname="hidden: "+req.roomname;
-		req.painthead = templater.render(fs.readFileSync('views/paint_head.html').toString(), {locals: {room: req.roomname}});	
+		var template = fs.readFileSync('views/paint_head.html').toString();
+		req.painthead = ejs.render(template, {room: req.roomname});	
 		next();
 	}
 }
@@ -90,7 +81,8 @@ app.post('/paint/:id/upload', function(req, res) {
 	if (size > 1048576) {
 		res.send("Image too large.", 403);
 	}
-	var buf = new Buffer(parseInt(size, 10));
+	
+	var buf = Buffer.alloc(parseInt(size, 10));
 	var pos = 0;
 	
 	
@@ -102,7 +94,7 @@ app.post('/paint/:id/upload', function(req, res) {
 	req.on('end', function() {
 		paintserver.uploadImage(req, req.params.id, buf, function(status, url) {
 			if (status === 200) {
-				res.send(JSON.stringify(url), status);
+				res.status(200).send(JSON.stringify(url));
 			}
 			else {
 				res.send(status);
@@ -111,6 +103,7 @@ app.post('/paint/:id/upload', function(req, res) {
 	});
 });
 
-server.listen(PORT);
+var server = http.Server(app);
 paintserver.Server(server);
-
+server.listen(PORT);
+console.log("Running at http://localhost:"+PORT)
