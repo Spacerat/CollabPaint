@@ -961,23 +961,20 @@ Paint.Canvas = function(object_id, painter) {
 		$(window).resize(resfunc);
 		$('#vertical_stretch').resize(resfunc);
 		
-		if ('ontouchstart' in window) {
-			var tevent = function(func, preventdefault) {
-				return function(evt) {
-					if (preventdefault) evt.preventDefault();
-					func(evt.touches[0]);
-				}
+		var tevent = function(func, preventdefault) {
+			return function(evt) {
+				if (preventdefault) evt.preventDefault();
+				func(evt.touches[0]);
 			}
-			temp_layer.canvasElm.addEventListener('touchstart', tevent(downEvent, true), false);
-			temp_layer.canvasElm.addEventListener('touchmove', tevent(moveEvent, true), false);
-			temp_layer.canvasElm.addEventListener('touchend', upEvent, false);
 		}
-		else {
-			temp_layer.canvasElm.addEventListener('mousedown', downEvent, false);
-			window.addEventListener('mousemove',moveEvent , false);
-			window.addEventListener('mouseup', upEvent, false);
-		}
+		temp_layer.canvasElm.addEventListener('touchstart', tevent(downEvent, true), false);
+		temp_layer.canvasElm.addEventListener('touchmove', tevent(moveEvent, true), false);
+		temp_layer.canvasElm.addEventListener('touchend', upEvent, false);
 		
+		temp_layer.canvasElm.addEventListener('mousedown', downEvent, false);
+		window.addEventListener('mousemove',moveEvent , false);
+		window.addEventListener('mouseup', upEvent, false);
+
 		//Drag/drop file upload
 		
 		containerElm.addEventListener('dragstart', function(evt) {
