@@ -859,7 +859,11 @@ Paint.Canvas = function (object_id, painter) {
       painter.MouseDown(pos, evt.button);
     };
     var moveEvent = function (evt) {
-      //evt.preventDefault();
+      console.log(evt);
+      if (evt?.identifier >= 1) {
+        evt.preventDefault();
+        return;
+      }
       var pos = tools.getRelativeMousePos(evt, temp_layer.canvasElm);
       pos.x += containerElm.scrollLeft;
       pos.y += containerElm.scrollTop;
