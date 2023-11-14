@@ -871,7 +871,10 @@ Paint.Painter = function () {
 
   this.Save = function () {
     //TODO: Save all layers.
-    window.open(current_layer.canvasElm.toDataURL());
+    const link = document.createElement("a");
+    link.href = current_layer.canvasElm.toDataURL("image/png");
+    link.download = "collabpaint.png";
+    link.click();
   };
 };
 
