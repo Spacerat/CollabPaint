@@ -79,8 +79,7 @@ Paint.tools.Brush.UI = function () {
   this.size = Paint.ui.slider(1, 100, 20);
   this.shadow = Paint.ui.slider(0, 100, 0);
   this.elements = [
-    Paint.ui.label("Size:", "strong"),
-    this.size,
+    Paint.ui.labelled(Paint.ui.label("Size:", "strong"), this.size),
     //,new Paint.ui.label("Shadow:", "strong")
     //,this.shadow
   ];
@@ -345,6 +344,14 @@ Paint.ui.label = function (HTML, type) {
   return elm;
 };
 
+Paint.ui.labelled = function (label, elm) {
+  var div = document.createElement("div");
+  div.className = "tool";
+  div.appendChild(label);
+  div.appendChild(elm);
+  return div;
+};
+
 Paint.ui.splitter = function () {
   var elm = document.createElement("span");
   elm.className = "splitter";
@@ -410,9 +417,15 @@ Paint.Toolbar = function (div_id, painter) {
   Paint.settings.globals.bgcolour = bgpicker;
   settingsElm.appendChild(bgpicker);
 
-  settingsElm.appendChild(Paint.ui.label("Opacity: "));
   Paint.settings.globals.opacity = Paint.ui.slider(0, 255, 255);
-  settingsElm.appendChild(Paint.settings.globals.opacity);
+
+  settingsElm.appendChild(Paint.ui.splitter());
+  settingsElm.appendChild(
+    Paint.ui.labelled(
+      Paint.ui.label("Opacity: "),
+      Paint.settings.globals.opacity
+    )
+  );
 
   //Set up the tool-specific-options section
   this.setTool = function (toolname) {
