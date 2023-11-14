@@ -9,12 +9,17 @@
 </head>
 
 <body ondragstart="return false;">
+
   <div id="mainbox">
+    <!-- For now, remove the title completely when in paint mode -->
+    <%if (!pagetitle) {%>
     <h1>
       <a href="/"><%= sitetitle %></a> <%if (pagetitle) {%> - <%=pagetitle%><%}%>
-      </h1>
+        </h1>
+        <%}%>
       <%- body %>
   </div>
+
 </body>
 
 </html>
