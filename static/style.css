@@ -31,6 +31,10 @@ h1 {
 	margin-bottom: 0;
 	font-size: 1.6em;
 	text-align: center;
+	@media (pointer: coarse)  {
+		display: none;
+	}
+	
 }
 h1 > a:visited, h1 > a:link{
 	color: black;
@@ -49,13 +53,10 @@ h2 {
 /* Paint stuff */
 
 #paint_container {
-
-
 	min-width: 300px;
 }
 
 #rightpanel {
-
 	background-color: white;
 	min-width: 0;
 	overflow: hidden;
@@ -162,8 +163,8 @@ button > img {
 #paint_canvas {
 	overflow: scroll;
 	height: 100px;
-	background: white url(/grid.png) repeat;
-	
+	/* background: white url(/grid.png) repeat; */
+	background: white ;
 }
 
 canvas.canvas {

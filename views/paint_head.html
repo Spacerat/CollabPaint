@@ -1,3 +1,4 @@
+<meta name="viewport" content="width=device-width,initial-scale=1" />
 <script src="/socket.io/socket.io.js"></script>
 
 <!--[if IE]><script type="text/javascript" src="/excanvas.compiled.js"></script><![endif]-->
@@ -9,20 +10,18 @@
 <script src="/md5.min.js"></script>
 <script>
   $(function() {
+    const not_mobile = !matchMedia('(pointer:coarse)').matches;
 
-    $("#vertical_stretch").splitter({
-      type: "v",
-      outline: true,
-      anchorToWindow: true,
-      maxRight: 400,
-      sizeRight: 300,
-      dock: 'rightDock'
-
-    });
-
-    //$(window).resize(function() {
-    //	$('#paint_canvas').height($(window).height() - $('#toolbar').height() - $('h1').height());
-    //});
+    if (not_mobile) {
+      $("#vertical_stretch").splitter({
+        type: "v",
+        outline: true,
+        anchorToWindow: true,
+        maxRight: 40,
+        sizeRight: 30,
+        dock: 'rightDock'
+      });
+    }
 
     jscolor.dir = '/jscolor/';
     var doc = new Paint.Painter();
