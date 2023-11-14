@@ -927,7 +927,7 @@ Paint.Canvas = function (object_id, painter) {
 
     // Toolbar hide hack
     const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get("hide_toolbar") === "true") {
+    if (urlParams.get("hide_ui") === "true") {
       $("#toolbar").hide();
     }
 

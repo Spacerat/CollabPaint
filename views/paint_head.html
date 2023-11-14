@@ -11,8 +11,10 @@
 <script>
   $(function() {
     const not_mobile = !matchMedia('(pointer:coarse)').matches;
+    const urlParams = new URLSearchParams(window.location.search);
+    const hide_ui = urlParams.get("hide_ui") === "true"
 
-    if (not_mobile) {
+    if (not_mobile && !hide_ui) {
       $("#vertical_stretch").splitter({
         type: "v",
         outline: true,
@@ -21,6 +23,8 @@
         sizeRight: 300,
         dock: 'rightDock'
       });
+    } else {
+      $("#rightpanel").hide()
     }
 
     jscolor.dir = '/jscolor/';
