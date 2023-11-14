@@ -3,39 +3,40 @@
 <!--[if IE]><script type="text/javascript" src="/excanvas.compiled.js"></script><![endif]-->
 <script src="/tools.min.js"> </script>
 <script src="/jscolor/jscolor.js"></script>
-<script src="/paint.js"> </script>		
+<script src="/paint.js"> </script>
 <script src="/jquery-1.5.2.min.js"></script>
 <script src="/splitter.js"></script>
 <script src="/md5.min.js"></script>
-<script> 
-	$(function() {
-	
-		$("#vertical_stretch").splitter({
-			type: "v",
-			outline: true,
-			anchorToWindow: true,
-			maxRight: 400, sizeRight: 300,
-			dock: 'rightDock'
+<script>
+  $(function() {
 
-		});
-		
-		//$(window).resize(function() {
-		//	$('#paint_canvas').height($(window).height() - $('#toolbar').height() - $('h1').height());
-		//});
+    $("#vertical_stretch").splitter({
+      type: "v",
+      outline: true,
+      anchorToWindow: true,
+      maxRight: 400,
+      sizeRight: 300,
+      dock: 'rightDock'
 
-		jscolor.dir = '/jscolor/';
-		var doc = new Paint.Painter();
-		doc.CreateToolbar("toolbar");
-		doc.CreateCanvas("paint_canvas");
-		doc.SetupChat();
-		doc.Connect("<%= room%>");
-		doc.setTool("Brush");
-		
-		/*
-		var c = document.getElementById("colpicker");
-		var s = document.getElementById("penWidth");
-		paint.getColour = function() {return "#"+c.color.toString();}
-		paint.getPenWidth = function() {return parseInt(s.value,10);}
-		*/
-	});
-</script>	
+    });
+
+    //$(window).resize(function() {
+    //	$('#paint_canvas').height($(window).height() - $('#toolbar').height() - $('h1').height());
+    //});
+
+    jscolor.dir = '/jscolor/';
+    var doc = new Paint.Painter();
+    doc.CreateToolbar("toolbar");
+    doc.CreateCanvas("paint_canvas");
+    doc.SetupChat();
+    doc.Connect("<%= room%>");
+    doc.setTool("Brush");
+
+    /*
+    var c = document.getElementById("colpicker");
+    var s = document.getElementById("penWidth");
+    paint.getColour = function() {return "#"+c.color.toString();}
+    paint.getPenWidth = function() {return parseInt(s.value,10);}
+    */
+  });
+</script>

@@ -1,29 +1,38 @@
-<div class="text_container"> 
-	<p> Welcome to CollabPaint. If you would like to create a room, simply direct your browser to it, e.g: <a href="/paint/myroom">/paint/myroom</a>.
-	You can call your room whatever you want. Anyone who knows the URL can join it. Rooms are deleted after an hour of no activity, or after five minutes of emptiness.</p>
-	<p> If you do not wish for your room to appear in this list, simply go to /hidden/ instead of /paint/, e.g: <a href="/hidden/myplace">/hidden/myplace</a></p>
-	<h2> Create a room </h2>
-	<form id="newroomform">
-		<div>
-			<label for="newroomname">Room name: </label>
-			<input type="text" id="newroomname" value="" required pattern="[^ ].*" />
-		</div>
-		<div>
-			<label for="newroomhidden">Hidden: </label>
-			<input type="checkbox" id="newroomhidden" value="hidden"> </input>
-		</div>
-		
-	</form>
-	<div id="new_room_link_container">
-		Link: <a href="" id="newroomlink"></a>
-	</div>
-	
-	<h2> Join a room </h2>
-	<p> Here is a list of public rooms. <a href="javascript:updateRooms()">(refresh)</a></p>
-	
-	<ul id="rooms">
-	</ul>
-	
+<div class="text_container">
+  <p>
+    Welcome to CollabPaint. If you would like to create a room, simply direct
+    your browser to it, e.g: <a href="/paint/myroom">/paint/myroom</a>. You can
+    call your room whatever you want. Anyone who knows the URL can join it.
+    Rooms are deleted after an hour of no activity, or after five minutes of
+    emptiness.
+  </p>
+  <p>
+    If you do not wish for your room to appear in this list, simply go to
+    /hidden/ instead of /paint/, e.g:
+    <a href="/hidden/myplace">/hidden/myplace</a>
+  </p>
+  <h2>Create a room</h2>
+  <form id="newroomform">
+    <div>
+      <label for="newroomname">Room name: </label>
+      <input type="text" id="newroomname" value="" required pattern="[^ ].*" />
+    </div>
+    <div>
+      <label for="newroomhidden">Hidden: </label>
+      <input type="checkbox" id="newroomhidden" value="hidden" />
+    </div>
+  </form>
+  <div id="new_room_link_container">Link: <a href="" id="newroomlink"></a></div>
+
+  <h2>Join a room</h2>
+  <p>
+    Here is a list of public rooms.
+    <a href="javascript:updateRooms()">(refresh)</a>
+  </p>
+
+  <ul id="rooms"></ul>
 </div>
 
-<a href="https://github.com/spacerat/CollabPaint"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://camo.githubusercontent.com/365986a132ccd6a44c23a9169022c0b5c890c387/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f7265645f6161303030302e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_red_aa0000.png"></a>
+<a href="https://github.com/spacerat/CollabPaint">
+  <img style="position: absolute; top: 0; right: 0; border: 0" src="https://camo.githubusercontent.com/365986a132ccd6a44c23a9169022c0b5c890c387/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f7265645f6161303030302e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_red_aa0000.png" />
+</a>

@@ -1,15 +1,21 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-        <title><%= pagetitle %></title>
-        <link rel="stylesheet" type="text/css" href="/style.css" />
-		<%- head %>	
-    </head>
-    <body ondragstart="return false;">
-		<div id="mainbox">
-			<h1> <a href="/"><%= sitetitle %></a> <%if (pagetitle) {%> - <%=pagetitle %><%}%></h1>
-			<%- body %>
-		</div>
-    </body>
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+  <title><%= pagetitle %></title>
+  <link rel="stylesheet" type="text/css" href="/style.css" />
+  <%- head %>
+</head>
+
+<body ondragstart="return false;">
+  <div id="mainbox">
+    <h1>
+      <a href="/"><%= sitetitle %></a> <%if (pagetitle) {%> - <%=pagetitle
+        %><%}%>
+      </h1>
+      <%- body %>
+  </div>
+</body>
+
 </html>

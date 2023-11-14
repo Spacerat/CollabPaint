@@ -1,10 +1,10 @@
 <script src="/jquery-1.5.2.min.js"></script>
 <script>
-  var updateRooms = function (cb) {
+  var updateRooms = function(cb) {
     $("#rooms").load("/rooms", cb);
   };
 
-  var updateNewRoomLink = function () {
+  var updateNewRoomLink = function() {
     var txt = $("#newroomname").val();
     txt = txt.replace(/\\/g, "");
     txt = encodeURIComponent(txt);
@@ -23,11 +23,11 @@
     $("#newroomlink").attr("href", txt);
     $("#newroomlink").attr("title", "Go to room: " + $("#newroomhidden").val());
   };
-  $(function () {
+  $(function() {
     $("#newroomname").keyup(updateNewRoomLink);
     $("#newroomname").change(updateNewRoomLink);
     $("#newroomhidden").change(updateNewRoomLink);
-    $("#newroomform").submit(function () {
+    $("#newroomform").submit(function() {
       var url = $("#newroomlink").attr("href");
       if (url) {
         window.open(url);
