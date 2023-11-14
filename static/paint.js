@@ -109,7 +109,7 @@ Paint.tools.Eraser = function (data) {
   }
   var lineWidth = data.lineWidth || Paint.settings.Eraser.size.getValue();
 
-  this.Render = function (layer) {
+  this.Render = function (layer, preview) {
     var ctx = layer.canvasElm.getContext("2d");
     ctx.beginPath();
     ctx.moveTo(points[0].x, points[0].y);
@@ -123,18 +123,25 @@ Paint.tools.Eraser = function (data) {
     ctx.lineCap = "round";
     ctx.lineJoin = "round";
     ctx.lineWidth = lineWidth;
-    ctx.globalCompositeOperation = "destination-out";
-    ctx.strokeStyle = "rgba(0, 0, 0, 255)";
+    if (!preview) {
+      ctx.globalCompositeOperation = "destination-out";
+      ctx.strokeStyle = "rgba(0, 0, 0, 255)";
+    } else {
+      ctx.strokeStyle = "rgba(255, 255, 255, 255)";
+    }
+
     ctx.globalAlpha = alpha;
     ctx.stroke();
-    ctx.globalCompositeOperation = "source-over";
+    if (!preview) {
+      ctx.globalCompositeOperation = "source-over";
+    }
     ctx.globalAlpha = 1;
   };
 
   this.MouseMove = function (pos, layer) {
     points.push(pos);
     layer.Clear();
-    this.Render(layer);
+    this.Render(layer, true);
   };
 
   this.MouseUp = function () {};
