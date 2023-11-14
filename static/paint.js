@@ -75,6 +75,8 @@ Paint.tools.Brush = function (data) {
     };
   };
 };
+
+Paint.tools.Brush.icon = "🖌";
 Paint.tools.Brush.UI = function () {
   this.size = Paint.ui.slider(1, 100, 20);
   this.shadow = Paint.ui.slider(0, 100, 0);
@@ -146,9 +148,12 @@ Paint.tools.Eraser = function (data) {
     };
   };
 };
+Paint.tools.Eraser.icon = "⌫";
 Paint.tools.Eraser.UI = function () {
   this.size = Paint.ui.slider(1, 100, 20);
-  this.elements = [Paint.ui.label("Size:", "strong"), this.size];
+  this.elements = [
+    Paint.ui.labelled(Paint.ui.label("Size:", "strong"), this.size),
+  ];
   this.cursor = "crosshair";
 };
 
@@ -189,9 +194,12 @@ Paint.tools.Line = function (data) {
     };
   };
 };
+Paint.tools.Line.icon = "╱";
 Paint.tools.Line.UI = function () {
   this.size = Paint.ui.slider(1, 100, 5);
-  this.elements = [Paint.ui.label("Size:", "strong"), this.size];
+  this.elements = [
+    Paint.ui.labelled(Paint.ui.label("Size:", "strong"), this.size),
+  ];
   this.cursor = "crosshair";
 };
 
@@ -201,6 +209,7 @@ Paint.tools.Pointer.UI = function () {
   this.elements = [];
   this.cursor = "auto";
 };
+Paint.tools.Pointer.icon = "✥";
 
 function drawEllipse(ctx, x, y, w, h) {
   var kappa = 0.5522848;
@@ -269,6 +278,8 @@ Paint.tools.Shape = function (data) {
     };
   };
 };
+Paint.tools.Shape.icon = "◌";
+
 Paint.tools.Shape.UI = function () {
   this.strokeWidth = Paint.ui.slider(0, 100, 5);
   this.Type = Paint.ui.Select(["Rectangle", "Ellipse"]);
@@ -276,8 +287,10 @@ Paint.tools.Shape.UI = function () {
 
   this.elements = [
     this.Type,
-    Paint.ui.label("Outline size:", "strong"),
-    this.strokeWidth,
+    Paint.ui.labelled(
+      Paint.ui.label("Outline size:", "strong"),
+      this.strokeWidth
+    ),
   ];
 };
 
@@ -287,6 +300,20 @@ Paint.ui.Select = function (items) {
     var opt = new Option(items[i], null);
     opt.value = items[i];
     elm.add(opt, null);
+  }
+  return elm;
+};
+
+Paint.ui.button = function ({ text, onClick, icon }) {
+  // Create a button with text and a optional icon
+  var elm = document.createElement("button");
+  elm.innerHTML = text;
+  elm.onclick = onClick;
+  if (icon) {
+    // prepend the icon inside the button
+    var iconElm = document.createElement("img");
+    iconElm.src = icon;
+    elm.prepend(iconElm);
   }
   return elm;
 };
@@ -384,6 +411,18 @@ Paint.Toolbar = function (div_id, painter) {
   //Add the sections
   divElm.appendChild(fileElm);
   divElm.appendChild(Paint.ui.splitter());
+
+  //Set up the tool menu section
+
+  const swapToolButton = Paint.ui.button({
+    text: "✥",
+    onClick: function () {
+      painter.swapTool();
+    },
+  });
+  divElm.appendChild(swapToolButton);
+  divElm.appendChild(Paint.ui.splitter());
+
   divElm.appendChild(toolsElm);
   divElm.appendChild(Paint.ui.splitter());
   divElm.appendChild(settingsElm);
@@ -391,24 +430,20 @@ Paint.Toolbar = function (div_id, painter) {
   divElm.appendChild(toolSettingsElm);
 
   //Set up the 'file menu'
-  (function () {
-    var save = document.createElement("button");
-    save.innerHTML = '<img src="/disk.png" alt="" /><span>Save</span>';
-    save.onclick = function () {
-      painter.Save();
-    };
-    fileElm.appendChild(save);
-  })();
 
-  //Set up the tool menu section
+  fileElm.appendChild(
+    Paint.ui.button({ text: "Save", onClick: painter.Save, icon: "/disk.png" })
+  );
+
   for (var b in Paint.tools) {
     toolsElm.add(new Option(b), null);
   }
-  toolsElm.onchange = function (evt) {
-    painter.setTool(this.value);
+  toolsElm.onchange = function () {
+    painter.setTool(this.value, "Pointer");
   };
 
   //Set up the global tools section
+
   var fgpicker = Paint.ui.colourPicker("#00F", painter);
   Paint.settings.globals.fgcolour = fgpicker;
   settingsElm.appendChild(fgpicker);
@@ -428,18 +463,17 @@ Paint.Toolbar = function (div_id, painter) {
   );
 
   //Set up the tool-specific-options section
-  this.setTool = function (toolname) {
+  this.setTool = function (toolname, swap_toolname) {
     toolsElm.value = toolname;
     toolSettingsElm.innerHTML = "";
     if (!Paint.settings[toolname]) {
       Paint.settings[toolname] = new Paint.tools[toolname].UI();
     }
-    if (Paint.settings[toolname].elements) {
-      for (var i = 0; i < Paint.settings[toolname].elements.length; i++) {
-        toolSettingsElm.appendChild(Paint.settings[toolname].elements[i]);
-      }
-    }
+
+    toolSettingsElm.append(...Paint.settings[toolname].elements);
+
     painter.setCursor(Paint.settings[toolname].cursor || "auto");
+    swapToolButton.innerHTML = Paint.tools[swap_toolname].icon;
   };
 };
 
@@ -484,6 +518,7 @@ Paint.Painter = function () {
   var canvas;
   var that = this;
   var selected_tool = "";
+  var swap_tool = "Pointer";
   var current_tool = null;
   var socket;
   var toolbar = null;
@@ -546,7 +581,7 @@ Paint.Painter = function () {
     );
     window.addEventListener(
       "mouseup",
-      function (evt) {
+      function () {
         dragging = false;
       },
       false
@@ -559,40 +594,33 @@ Paint.Painter = function () {
       dragging = true;
       dragoffset = pos.x;
     });
-    $(window).resize(function (evt) {
+    $(window).resize(function () {
       ChatFix();
     });
 
     var usc = $("#usercount");
     var usrs = $("#users");
     usrs.toggle();
-    usc.mouseover(function (evt) {
+    usc.mouseover(function () {
       usrs.toggle("fast");
     });
-    usc.mousemove(function (evt) {
+    usc.mousemove(function () {
       var pos = usc.position();
       //pos.top += usc.height();
       usrs.offset(pos);
     });
-    usrs.mouseleave(function (evt) {
+    usrs.mouseleave(function () {
       usrs.toggle("fast");
     });
   };
 
   this.ProcessChat = function (msg) {
     var elm = document.getElementById("chat");
-    var doscroll = elm.scrollTop === elm.scrollHeight;
 
     $("#chat").append(function () {
       var txt = msg.text;
       if (msg.sender) {
-        return (
-          '<span class="chatname">' +
-          msg.sender.name +
-          ":</span> " +
-          txt +
-          "<br/>"
-        );
+        return `<span class="chatname">${msg.sender.name}:</span> ${txt}<br/>`;
       } else {
         return txt + "<br/>";
       }
@@ -601,7 +629,7 @@ Paint.Painter = function () {
     elm.scrollTop = elm.scrollHeight;
   };
 
-  this.ProcessCommand = function (command, is_new, socket) {
+  this.ProcessCommand = function (command, is_new) {
     switch (command.cmd) {
       case "new_layer":
         this.AddLayer(command.params);
@@ -684,9 +712,7 @@ Paint.Painter = function () {
             that.ProcessChat(msg);
             break;
           case "chathistory":
-            for (var i = 0; i < msg.length; i++) {
-              that.ProcessChat(msg[i]);
-            }
+            msg.forEach(() => that.ProcessChat(msg));
             break;
           case "name_change":
             if (msg.you === true) {
@@ -698,9 +724,7 @@ Paint.Painter = function () {
             break;
           case "members":
             var html = "<ul>";
-            for (var i = 0; i < msg.length; i++) {
-              html += "<li>" + msg[i].name + "</li>";
-            }
+            html += msg.map((m) => `<li>${m.name}</li>`).join("");
             html += "</ul>";
             $("#users").html(html);
             break;
@@ -792,9 +816,24 @@ Paint.Painter = function () {
     return selected_tool;
   };
 
+  this.swapTool = function () {
+    that.setTool(swap_tool);
+  };
+
   this.setTool = function (toolname) {
+    // When switching to anything except the pointer, the swap
+    // tool should always be pointer.
+    // When switching to pointer, the swap tool should be whatever
+    // the last tool was
+
+    const last_tool = selected_tool;
     selected_tool = toolname;
-    toolbar.setTool(toolname);
+    if (toolname === "Pointer") {
+      swap_tool = last_tool;
+    } else {
+      swap_tool = "Pointer";
+    }
+    toolbar.setTool(toolname, swap_tool);
   };
 
   this.setCursor = function (curs) {
