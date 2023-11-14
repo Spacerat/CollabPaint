@@ -854,8 +854,8 @@ Paint.Canvas = function (object_id, painter) {
   var containerElm;
   var layersElm;
   var temp_layer = new Paint.Layer({ name: "temp" });
-  var w = 1910;
-  var h = 1070;
+  var w = 1900;
+  var h = 1060;
 
   this.Init = function () {
     containerElm = document.getElementById(object_id);
