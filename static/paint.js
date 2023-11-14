@@ -887,7 +887,7 @@ Paint.Canvas = function (object_id, painter) {
 
     var tevent = function (func, preventdefault) {
       return function (evt) {
-        if (evt?.touches.length > 1) {
+        if (painter.getSelectedTool() == "Pointer") {
           return;
         }
         if (preventdefault) {
