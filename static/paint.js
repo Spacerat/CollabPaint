@@ -741,7 +741,7 @@ Paint.Painter = function () {
             that.ProcessChat(msg);
             break;
           case "chathistory":
-            msg.forEach(() => that.ProcessChat(msg));
+            msg.forEach((msg) => that.ProcessChat(msg));
             break;
           case "name_change":
             if (msg.you === true) {
