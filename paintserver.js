@@ -150,7 +150,7 @@ paint.Document = function () {
 function quicklog(s, f) {
   var logpath = "/tmp/" + f + ".log";
   s = s.toString().replace(/\r\n|\r/g, "\n"); // hack
-  var fd = fs.openSync(logpath, "a+", 0666);
+  var fd = fs.openSync(logpath, "a+", 0o666);
   fs.writeSync(fd, s + "\n");
   fs.closeSync(fd);
 }

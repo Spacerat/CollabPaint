@@ -18,5 +18,8 @@
     },
     "scripts": {
         "start": "node site.js"
+    },
+    "devDependencies": {
+        "eslint": "^8.53.0"
     }
 }

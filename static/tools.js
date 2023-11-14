@@ -16,7 +16,8 @@ tools = new (function () {
   };
 
   this.findAbsolutePosition = function (obj) {
-    var curleft = (curtop = 0);
+    let curleft = 0;
+    let curtop = 0;
     if (obj.offsetParent) {
       do {
         curleft += obj.offsetLeft;

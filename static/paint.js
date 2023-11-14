@@ -1,18 +1,3 @@
-//Console.log fix
-try {
-  (function () {
-    var a = console.log;
-  })();
-} catch (e) {
-  console = {
-    log: function (object) {
-      setTimeout(function () {
-        throw new Error("log: " + JSON.stringify(object));
-      }, 1);
-    },
-  };
-}
-
 //Namespaces
 Paint = {
   tools: {},
@@ -212,7 +197,7 @@ Paint.tools.Line.UI = function () {
 };
 
 //Classes
-Paint.tools.Pointer = function (data) {};
+Paint.tools.Pointer = function () {};
 Paint.tools.Pointer.UI = function () {
   this.elements = [];
   this.cursor = "auto";
@@ -297,12 +282,12 @@ Paint.tools.Tube.UI = function() {
 
 function drawEllipse(ctx, x, y, w, h) {
   var kappa = 0.5522848;
-  (ox = (w / 2) * kappa), // control point offset horizontal
-    (oy = (h / 2) * kappa), // control point offset vertical
-    (xe = x + w), // x-end
-    (ye = y + h), // y-end
-    (xm = x + w / 2), // x-middle
-    (ym = y + h / 2); // y-middle
+  var ox = (w / 2) * kappa; // control point offset horizontal
+  var oy = (h / 2) * kappa; // control point offset vertical
+  var xe = x + w; // x-end
+  var ye = y + h; // y-end
+  var xm = x + w / 2; // x-middle
+  var ym = y + h / 2; // y-middle
 
   ctx.beginPath();
   ctx.moveTo(x, ym);
@@ -392,17 +377,11 @@ Paint.ui.colourPicker = function (col, painter) {
   picker.fromString(col);
   elm.getArgb = function () {
     var rgb = picker.rgb;
-    return (
-      "rgba(" +
-      rgb[0] * 255.0 +
-      "," +
-      rgb[1] * 255.0 +
-      "," +
-      rgb[2] * 255.0 +
-      "," +
-      Paint.settings.globals.opacity.getValue() / 255.0 +
-      ")"
-    );
+    var alpha = Paint.settings.globals.opacity.getValue() / 255.0;
+    const r = rgb[0] * 255.0;
+    const g = rgb[1] * 255.0;
+    const b = rgb[2] * 255.0;
+    return `rgba(${r},${g},${b},${alpha})`;
   };
 
   picker.onShow = function () {
@@ -939,7 +918,6 @@ Paint.Canvas = function (object_id, painter) {
   var containerElm;
   var layersElm;
   var temp_layer = new Paint.Layer({ name: "temp" });
-  var that = this;
   var w = 1680;
   var h = 1050;
 
