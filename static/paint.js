@@ -852,15 +852,17 @@ Paint.Canvas = function (object_id, painter) {
     temp_layer.Attach(layersElm);
     temp_layer.Resize(w, h);
     var downEvent = function (evt) {
-      //evt.preventDefault();
+      if (evt?.touches?.length >= 2) {
+        evt.preventDefault();
+        return;
+      }
       var pos = tools.getRelativeMousePos(evt, temp_layer.canvasElm);
       pos.x += containerElm.scrollLeft;
       pos.y += containerElm.scrollTop;
       painter.MouseDown(pos, evt.button);
     };
     var moveEvent = function (evt) {
-      console.log(evt);
-      if (evt?.identifier >= 1) {
+      if (evt?.touches?.length >= 2) {
         evt.preventDefault();
         return;
       }
@@ -876,6 +878,7 @@ Paint.Canvas = function (object_id, painter) {
       pos.y += containerElm.scrollTop;
       painter.MouseUp(pos);
     };
+
     temp_layer.canvasElm.oncontextmenu = function () {
       if (painter.getSelectedTool() !== "Pointer") {
         return false;
