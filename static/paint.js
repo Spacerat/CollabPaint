@@ -304,11 +304,12 @@ Paint.ui.Select = function (items) {
   return elm;
 };
 
-Paint.ui.button = function ({ text, onClick, icon }) {
+Paint.ui.button = function ({ text, onClick, icon, title }) {
   // Create a button with text and a optional icon
   var elm = document.createElement("button");
   elm.innerHTML = text;
   elm.onclick = onClick;
+  elm.title = title;
   if (icon) {
     // prepend the icon inside the button
     var iconElm = document.createElement("img");
@@ -423,6 +424,7 @@ Paint.Toolbar = function (div_id, painter) {
 
   const swapToolButton = Paint.ui.button({
     text: "✥",
+    title: "Swap tool",
     onClick: function () {
       painter.swapTool();
     },
@@ -467,6 +469,7 @@ Paint.Toolbar = function (div_id, painter) {
   const swapColorButton = Paint.ui.button({
     // swap unicode character
     text: "↔",
+    title: "Swap colors",
     onClick: function () {
       const fg = fgPickerElm.value;
       fgPicker.fromString(bgPickerElm.value);
