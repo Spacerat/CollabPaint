@@ -925,6 +925,12 @@ Paint.Canvas = function (object_id, painter) {
     window.addEventListener("mousemove", moveEvent, false);
     window.addEventListener("mouseup", upEvent, false);
 
+    // Toolbar hide hack
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get("hide_toolbar") === "true") {
+      $("#toolbar").hide();
+    }
+
     //Drag/drop file upload
 
     containerElm.addEventListener(
