@@ -14,7 +14,7 @@
         "socket.io": "^2.5.0"
     },
     "engines": {
-        "node": "12.4.0"
+        "node": "19.4.0"
     },
     "scripts": {
         "start": "node site.js"
