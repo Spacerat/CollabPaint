@@ -1,5 +1,6 @@
 var io = require("socket.io");
 var Packet = require("./server_packet").Packet;
+var Names = require("./names").names;
 var crypto = require("crypto");
 var fs = require("fs");
 
@@ -413,7 +414,7 @@ this.Server = function (server) {
       room: null,
     };
     client.info = {
-      name: "Anon",
+      name: Names[Math.floor(Math.random() * Names.length)],
       id: client.id,
     };
 
