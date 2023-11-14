@@ -361,7 +361,7 @@ Paint.ui.colourPicker = function (col, painter) {
     };
   };
 
-  return elm;
+  return { elm, picker };
 };
 
 Paint.ui.label = function (HTML, type) {
@@ -376,6 +376,13 @@ Paint.ui.labelled = function (label, elm) {
   div.className = "tool";
   div.appendChild(label);
   div.appendChild(elm);
+  return div;
+};
+
+Paint.ui.div = function (elements) {
+  var div = document.createElement("div");
+  div.className = "tool";
+  div.append(...elements);
   return div;
 };
 
@@ -444,13 +451,35 @@ Paint.Toolbar = function (div_id, painter) {
 
   //Set up the global tools section
 
-  var fgpicker = Paint.ui.colourPicker("#00F", painter);
-  Paint.settings.globals.fgcolour = fgpicker;
-  settingsElm.appendChild(fgpicker);
+  const { elm: fgPickerElm, picker: fgPicker } = Paint.ui.colourPicker(
+    "#00F",
+    painter
+  );
+  Paint.settings.globals.fgcolour = fgPickerElm;
 
-  var bgpicker = Paint.ui.colourPicker("#FFF", painter);
-  Paint.settings.globals.bgcolour = bgpicker;
-  settingsElm.appendChild(bgpicker);
+  const { elm: bgPickerElm, picker: bgPicker } = Paint.ui.colourPicker(
+    "#FFF",
+    painter
+  );
+  Paint.settings.globals.bgcolour = bgPickerElm;
+
+  // Color swap button
+  const swapColorButton = Paint.ui.button({
+    // swap unicode character
+    text: "↔",
+    onClick: function () {
+      const fg = fgPickerElm.value;
+      fgPicker.fromString(bgPickerElm.value);
+      bgPicker.fromString(fg);
+    },
+  });
+
+  // settingsElm.appendChild(fgPickerElm);
+  // settingsElm.appendChild(bgPickerElm);
+  // settingsElm.appendChild(swapColorButton);
+  settingsElm.appendChild(
+    Paint.ui.div([fgPickerElm, bgPickerElm, swapColorButton])
+  );
 
   Paint.settings.globals.opacity = Paint.ui.slider(0, 255, 255);
 
