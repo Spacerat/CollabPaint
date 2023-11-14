@@ -4,10 +4,19 @@
 	<p> If you do not wish for your room to appear in this list, simply go to /hidden/ instead of /paint/, e.g: <a href="/hidden/myplace">/hidden/myplace</a></p>
 	<h2> Create a room </h2>
 	<form id="newroomform">
-		Room name: <input type="text" id="newroomname" value=""></input><br/>
-		Hidden: <input type="checkbox" id="newroomhidden" value="hidden"> </input>
+		<div>
+			<label for="newroomname">Room name: </label>
+			<input type="text" id="newroomname" value="" required pattern="[^ ].*" />
+		</div>
+		<div>
+			<label for="newroomhidden">Hidden: </label>
+			<input type="checkbox" id="newroomhidden" value="hidden"> </input>
+		</div>
+		
 	</form>
-	Link: <a href="" id="newroomlink"></a>
+	<div id="new_room_link_container">
+		Link: <a href="" id="newroomlink"></a>
+	</div>
 	
 	<h2> Join a room </h2>
 	<p> Here is a list of public rooms. <a href="javascript:updateRooms()">(refresh)</a></p>
