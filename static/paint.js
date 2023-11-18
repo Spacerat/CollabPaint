@@ -400,7 +400,9 @@ Paint.ui.slider = function (min, max, value) {
     elm.type = "range";
     elm.min = min;
     elm.max = max || 100;
-  } catch (e) {}
+  } catch (e) {
+    // ignore the error
+  }
   elm.value = value;
   elm.getValue = function () {
     if (elm.value !== undefined) {
@@ -1035,7 +1037,7 @@ Paint.Canvas = function (object_id, painter) {
       },
       false
     );
-    var dragend = function (evt) {
+    var dragend = function () {
       $(temp_layer.canvasElm).css("background", "none");
     };
     containerElm.addEventListener("dragend", dragend, false);
@@ -1092,7 +1094,7 @@ Paint.Canvas = function (object_id, painter) {
               var xhr = new XMLHttpRequest();
               var up = xhr.upload;
               var uploadbar = new Paint.ProgressBar(containerElm);
-              xhr.onload = function (xevt) {
+              xhr.onload = function () {
                 var obj = JSON.parse(xhr.responseText);
                 loadedkey = obj.key;
                 cacheClientImage();

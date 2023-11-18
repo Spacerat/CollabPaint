@@ -9,6 +9,8 @@ module.exports = {
   globals: {
     tools: true,
     Paint: true,
+    b64_md5: true,
+    io: true,
   },
   extends: "eslint:recommended",
   overrides: [
@@ -25,5 +27,7 @@ module.exports = {
   parserOptions: {
     ecmaVersion: "latest",
   },
-  rules: {},
+  rules: {
+    "no-constant-binary-expression": "error",
+  },
 };
