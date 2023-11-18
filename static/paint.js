@@ -316,7 +316,7 @@ Paint.ui.button = function ({ text, onClick, icon, title }) {
   var elm = document.createElement("button");
   elm.innerHTML = text;
   elm.onclick = onClick;
-  elm.title = title;
+  elm.title = title ?? text ?? undefined;
   if (icon) {
     // prepend the icon inside the button
     var iconElm = document.createElement("img");
@@ -328,20 +328,20 @@ Paint.ui.button = function ({ text, onClick, icon, title }) {
 
 Paint.ui.colourPicker = function (col, painter) {
   var elm = document.createElement("input");
+  elm.type = "color";
   elm.style.width = "4em";
-  var picker = new jscolor.color(elm, {});
-
-  picker.fromString(col);
+  elm.value = col;
+  console.log({ tools });
   elm.getArgb = function () {
-    var rgb = picker.rgb;
+    console.log({ tools });
+    var rgb = tools.hexToRgb(elm.value);
     var alpha = Paint.settings.globals.opacity.getValue() / 255.0;
-    const r = rgb[0] * 255.0;
-    const g = rgb[1] * 255.0;
-    const b = rgb[2] * 255.0;
+    const r = rgb.r;
+    const g = rgb.g;
+    const b = rgb.b;
     return `rgba(${r},${g},${b},${alpha})`;
   };
-
-  picker.onShow = function () {
+  elm.onShow = function () {
     var containerElm = document.getElementById("paint_canvas");
     var ctx = painter.getCurrentLayer().canvasElm.getContext("2d");
     var listener = function (evt) {
@@ -353,23 +353,23 @@ Paint.ui.colourPicker = function (col, painter) {
         //TODO: this will cause problems with multiple layers.
 
         if (data[3] === 0) {
-          picker.fromRGB(1, 1, 1);
+          elm.fromRGB(1, 1, 1);
         } else {
-          picker.fromRGB(data[0] / 255.0, data[1] / 255.0, data[2] / 255.0);
+          elm.fromRGB(data[0] / 255.0, data[1] / 255.0, data[2] / 255.0);
         }
       }
     };
     document
       .getElementById("layer_temp")
       .addEventListener("mousedown", listener, false);
-    picker.onHide = function () {
+    elm.onHide = function () {
       document
         .getElementById("layer_temp")
         .removeEventListener("mousedown", listener, false);
     };
   };
 
-  return { elm, picker };
+  return elm;
 };
 
 Paint.ui.label = function (HTML, type) {
@@ -394,12 +394,6 @@ Paint.ui.div = function (elements) {
   return div;
 };
 
-Paint.ui.splitter = function () {
-  var elm = document.createElement("span");
-  elm.className = "splitter";
-  return elm;
-};
-
 Paint.ui.slider = function (min, max, value) {
   var elm = document.createElement("input");
   try {
@@ -418,14 +412,15 @@ Paint.ui.slider = function (min, max, value) {
 
 Paint.Toolbar = function (div_id, painter) {
   var divElm = document.getElementById(div_id);
-  var fileElm = document.createElement("span");
+  var fileElm = document.createElement("div");
   var toolsElm = document.createElement("select");
-  var settingsElm = document.createElement("span");
-  var toolSettingsElm = document.createElement("span");
+  var settingsElm = document.createElement("div");
+  settingsElm.id = "settings";
+  var toolSettingsElm = document.createElement("div");
+  toolSettingsElm.id = "toolSettings";
 
   //Add the sections
-  divElm.appendChild(fileElm);
-  divElm.appendChild(Paint.ui.splitter());
+  settingsElm.appendChild(fileElm);
 
   //Set up the tool menu section
 
@@ -436,13 +431,10 @@ Paint.Toolbar = function (div_id, painter) {
       painter.swapTool();
     },
   });
-  divElm.appendChild(swapToolButton);
-  divElm.appendChild(Paint.ui.splitter());
+  const toolsContainer = Paint.ui.div([toolsElm, swapToolButton]);
 
-  divElm.appendChild(toolsElm);
-  divElm.appendChild(Paint.ui.splitter());
+  settingsElm.appendChild(toolsContainer);
   divElm.appendChild(settingsElm);
-  divElm.appendChild(Paint.ui.splitter());
   divElm.appendChild(toolSettingsElm);
 
   //Set up the 'file menu'
@@ -460,17 +452,11 @@ Paint.Toolbar = function (div_id, painter) {
 
   //Set up the global tools section
 
-  const { elm: fgPickerElm, picker: fgPicker } = Paint.ui.colourPicker(
-    "#00F",
-    painter
-  );
-  Paint.settings.globals.fgcolour = fgPickerElm;
+  const fgPicker = Paint.ui.colourPicker("#0000FF", painter);
+  Paint.settings.globals.fgcolour = fgPicker;
 
-  const { elm: bgPickerElm, picker: bgPicker } = Paint.ui.colourPicker(
-    "#FFF",
-    painter
-  );
-  Paint.settings.globals.bgcolour = bgPickerElm;
+  const bgPicker = Paint.ui.colourPicker("#FFFFFF", painter);
+  Paint.settings.globals.bgcolour = bgPicker;
 
   // Color swap button
   const swapColorButton = Paint.ui.button({
@@ -478,22 +464,18 @@ Paint.Toolbar = function (div_id, painter) {
     text: "↔",
     title: "Swap colors",
     onClick: function () {
-      const fg = fgPickerElm.value;
-      fgPicker.fromString(bgPickerElm.value);
-      bgPicker.fromString(fg);
+      const fg = fgPicker.value;
+      fgPicker.value = bgPicker.value;
+      bgPicker.value = fg;
     },
   });
 
-  // settingsElm.appendChild(fgPickerElm);
-  // settingsElm.appendChild(bgPickerElm);
-  // settingsElm.appendChild(swapColorButton);
-  settingsElm.appendChild(
-    Paint.ui.div([fgPickerElm, bgPickerElm, swapColorButton])
-  );
+  const colorsElm = Paint.ui.div([fgPicker, bgPicker, swapColorButton]);
+
+  settingsElm.appendChild(colorsElm);
 
   Paint.settings.globals.opacity = Paint.ui.slider(0, 255, 255);
 
-  settingsElm.appendChild(Paint.ui.splitter());
   settingsElm.appendChild(
     Paint.ui.labelled(
       Paint.ui.label("Opacity: "),

@@ -1,4 +1,8 @@
 
+*, *:before, *:after {
+	box-sizing: border-box;
+}
+
 /* Website */
 body {
 	margin: 0;
@@ -31,11 +35,8 @@ h1 {
 	margin-bottom: 0;
 	font-size: 1.6em;
 	text-align: center;
-	@media (pointer: coarse)  {
-		display: none;
-	}
-	
 }
+
 h1 > a:visited, h1 > a:link{
 	color: black;
 }
@@ -186,6 +187,17 @@ canvas.canvas {
 	padding: 0.4em 1em;
 }
 
+#settings, #toolbar, #toolSettings {
+	display: flex;
+	flex-wrap: wrap;
+	column-gap: 12px;
+	row-gap: 8px;
+}
+
+#toolbar input[type=color], #toolbar select, #toolbar button {
+	height: 35px
+}
+
 .vsplitbar {
 	width: 6px;
 	background: #EEF url(/vgrabber.gif) no-repeat center;
@@ -205,5 +217,7 @@ canvas.canvas {
 }
 
 .tool {
-	display: inline-block;
+	display: inline-flex;
+	align-items: center;
+	column-gap: 4px;
 }

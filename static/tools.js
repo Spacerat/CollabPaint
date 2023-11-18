@@ -53,4 +53,11 @@ tools = new (function () {
   this.Choose = function (list) {
     return list[this.randRangeInt(0, list.length - 1)];
   };
+
+  this.hexToRgb = function (hex) {
+    const r = parseInt(hex.substr(1, 2), 16);
+    const g = parseInt(hex.substr(3, 2), 16);
+    const b = parseInt(hex.substr(5, 2), 16);
+    return { r, g, b };
+  };
 })();
