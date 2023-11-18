@@ -156,13 +156,16 @@ function quicklog(s, f) {
   fs.closeSync(fd);
 }
 
+const one_hour = 1000 * 60 * 60;
+
 var Room = function (url, rooms) {
   var chat = [];
 
   var members = [];
   var doc = new paint.Document();
   var max_members = 255;
-  var timeout_time = 1000 * 60 * 60;
+
+  var timeout_time = one_hour * 24;
   var timeout;
   var images = {};
   var closed = false;
