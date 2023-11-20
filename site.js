@@ -1,13 +1,13 @@
-var paintserver = require("./paintserver");
-var express = require("express");
-var http = require("http");
-var ejs = require("ejs");
-var fs = require("fs");
-var partials = require("express-partials");
-var bodyParser = require("body-parser");
-var session = require("express-session");
-var PORT = process.env.PORT || 8080;
-var app = express();
+const paintserver = require("./paintserver");
+const express = require("express");
+const http = require("http");
+const ejs = require("ejs");
+const fs = require("fs");
+const partials = require("express-partials");
+const bodyParser = require("body-parser");
+const session = require("express-session");
+const PORT = process.env.PORT || 8080;
+const app = express();
 
 app.use(partials());
 app.use(express.static(__dirname + "/static"));
@@ -30,7 +30,7 @@ app.engine(".html", ejs.renderFile);
 ////
 
 app.get("/", function (req, res) {
-  var head = ejs.render(fs.readFileSync("views/index_head.html").toString());
+  const head = ejs.render(fs.readFileSync("views/index_head.html").toString());
   res.render("index", {
     sitetitle: "CollabPaint",
     pagetitle: "",
@@ -39,7 +39,7 @@ app.get("/", function (req, res) {
 });
 
 app.get("/rooms", function (req, res) {
-  var accept = req.header("Accept");
+  const accept = req.header("Accept");
   if (accept.indexOf("json") != -1 || accept.indexOf("javascript") != -1) {
     res.send(JSON.stringify(paintserver.getPublicRooms()));
   } else {
@@ -51,7 +51,7 @@ function paintRoom(hidden) {
   return function paintRoom(req, res, next) {
     req.roomname = req.params.id;
     if (hidden) req.roomname = "hidden: " + req.roomname;
-    var template = fs.readFileSync("views/paint_head.html").toString();
+    const template = fs.readFileSync("views/paint_head.html").toString();
     req.painthead = ejs.render(template, { room: req.roomname });
     next();
   };
@@ -77,13 +77,13 @@ app.on("data", function (chunk) {
 });
 
 app.post("/paint/:id/upload", function (req, res) {
-  var size = req.headers["content-length"];
+  const size = req.headers["content-length"];
   if (size > 1048576) {
     res.send("Image too large.", 403);
   }
 
-  var buf = Buffer.alloc(parseInt(size, 10));
-  var pos = 0;
+  const buf = Buffer.alloc(parseInt(size, 10));
+  let pos = 0;
 
   //req.setEncoding('binary');
   req.on("data", function (chunk) {
@@ -101,7 +101,7 @@ app.post("/paint/:id/upload", function (req, res) {
   });
 });
 
-var server = http.Server(app);
+const server = http.Server(app);
 paintserver.Server(server);
 server.listen(PORT);
 console.log("Running at http://localhost:" + PORT);
