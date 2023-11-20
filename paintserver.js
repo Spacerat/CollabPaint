@@ -1,8 +1,8 @@
-var io = require("socket.io");
-var Packet = require("./server_packet").Packet;
-var Names = require("./names").names;
-var crypto = require("crypto");
-var fs = require("fs");
+const io = require("socket.io");
+const Packet = require("./server_packet").Packet;
+const Names = require("./names").names;
+const crypto = require("crypto");
+const fs = require("fs");
 
 /* Room class. Pass settings object in the form: {
     max_clients: int,    //10
@@ -10,27 +10,27 @@ var fs = require("fs");
     anyone_join: bool,   //false
 }*/
 
-var isNumber = function (n) {
+const isNumber = function (n) {
   return !isNaN(parseFloat(n)) && isFinite(n);
 };
-var isInteger = function (n) {
+const isInteger = function (n) {
   return !isNaN(parseInt(n, 10)) && isFinite(n);
 };
 
-var ServerName = "CollabBox";
+const ServerName = "CollabBox";
 
-var paint = {};
+const paint = {};
 
 paint.Layer = function (name) {
   this.name = name;
 };
 
 paint.Document = function () {
-  var history = [];
-  var layers = [];
+  let history = [];
+  let layers = [];
 
-  var validate_position = function (pos) {
-    for (var n in pos) {
+  const validate_position = function (pos) {
+    for (const n in pos) {
       if (n == "x" || n == "y") {
         if (isInteger(pos[n]) === false) {
           return false;
@@ -40,16 +40,16 @@ paint.Document = function () {
     return true;
   };
 
-  var validate_points = function (points) {
-    for (var i = 0; i < points.length; i++) {
+  const validate_points = function (points) {
+    for (let i = 0; i < points.length; i++) {
       if (!validate_position(points[i])) return false;
     }
     return true;
   };
 
-  var validate = function (dict, name, checktype) {
-    var v = dict[name];
-    var err = "";
+  const validate = function (dict, name, checktype) {
+    const v = dict[name];
+    let err = "";
 
     checktype.split(" ").forEach(function (t) {
       switch (t) {
@@ -74,28 +74,23 @@ paint.Document = function () {
       }
     });
     if (err.length > 0) {
-      throw (
-        "Invalid data " +
-        v.toString() +
-        " for " +
-        name +
-        '. Expecting a "' +
-        checktype +
-        '" value, but ' +
-        err +
-        "."
+      throw new Error(
+        `Invalid data ${v.toString()} for ${name}. \
+        Expecting a "${checktype}" value, but ${err}`
       );
     }
   };
 
   this.DoCommand = function (command) {
-    //var allowed_tools = ['Brush', 'Eraser', 'tool']
+    //const allowed_tools = ['Brush', 'Eraser', 'tool']
     switch (command.cmd) {
       case "new_layer":
-        var name = command.params.name || "Layer_" + (layers.length + 1);
-        command.params.name = name;
-        var l = new paint.Layer(name);
-        layers.push(l);
+        {
+          const name = command.params.name || "Layer_" + (layers.length + 1);
+          command.params.name = name;
+          const l = new paint.Layer(name);
+          layers.push(l);
+        }
         break;
       case "image":
         //Image URL/key has already been validated
@@ -149,27 +144,27 @@ paint.Document = function () {
 };
 
 function quicklog(s, f) {
-  var logpath = "/tmp/" + f + ".log";
+  const logpath = "/tmp/" + f + ".log";
   s = s.toString().replace(/\r\n|\r/g, "\n"); // hack
-  var fd = fs.openSync(logpath, "a+", 0o666);
+  const fd = fs.openSync(logpath, "a+", 0o666);
   fs.writeSync(fd, s + "\n");
   fs.closeSync(fd);
 }
 
 const one_hour = 1000 * 60 * 60;
 
-var Room = function (url, rooms) {
-  var chat = [];
+const Room = function (url, rooms) {
+  const chat = [];
 
-  var members = [];
-  var doc = new paint.Document();
-  var max_members = 255;
+  let members = [];
+  let doc = new paint.Document();
+  const max_members = 255;
 
-  var timeout_time = one_hour * 24;
-  var timeout;
-  var images = {};
-  var closed = false;
-  var timeout_func = function () {
+  const timeout_time = one_hour * 24;
+  let timeout;
+  let images = {};
+  let closed = false;
+  const timeout_func = function () {
     if (closed === true) {
       quicklog(
         "Attempt to close already closed room " + url + "!",
@@ -203,20 +198,20 @@ var Room = function (url, rooms) {
     });
     clearTimeout(timeout);
   };
-  var extend_time = function (time) {
+  const extend_time = function (time) {
     time = time || timeout_time;
     clearTimeout(timeout);
     timeout = setTimeout(timeout_func, time);
   };
 
-  var roomhash = crypto.createHash("md5");
-  var roomcacheurl = "static/roomcache/" + roomhash.digest("hex");
+  const roomhash = crypto.createHash("md5");
+  const roomcacheurl = "static/roomcache/" + roomhash.digest("hex");
 
   try {
     fs.mkdirSync(roomcacheurl, "0777");
   } catch (e) {
     if (e.code != "EEXIST") {
-      throw err;
+      throw e;
     }
   }
 
@@ -263,8 +258,8 @@ var Room = function (url, rooms) {
     this.member_count = members.length + 1;
     client.data.room = this;
 
-    var t = 1;
-    var newname = client.info.name;
+    let t = 1;
+    let newname = client.info.name;
     while (this.clientByName(newname) !== null) {
       newname = client.info.name + t;
       t += 1;
@@ -273,7 +268,7 @@ var Room = function (url, rooms) {
 
     new Packet().newMember(client, this).broadcastToRoom(client.listener, this);
     members.push(client);
-    var p = new Packet()
+    new Packet()
       .acceptJoin(client, newroom)
       .Set("history", doc.getHistory())
       .chatHistory(chat)
@@ -285,8 +280,8 @@ var Room = function (url, rooms) {
   };
 
   this.removeClient = function (client) {
-    var newmembers = [];
-    for (var i = 0; i < members.length; i++) {
+    const newmembers = [];
+    for (let i = 0; i < members.length; i++) {
       if (members[i] !== client) {
         newmembers.push(members[i]);
       }
@@ -313,15 +308,15 @@ var Room = function (url, rooms) {
   };
 
   this.addImage = function (req, buf, cb) {
-    var hash = crypto.createHash("md5");
+    const hash = crypto.createHash("md5");
     hash.update(buf);
-    var key = hash.digest("hex");
-    var ext = req.headers["x-file-name"];
-    ext = ext.substr(ext.lastIndexOf("."));
+    const key = hash.digest("hex");
+    const ext = req.headers["x-file-name"].substr(ext.lastIndexOf("."));
+
     if (images[key] !== undefined) {
       cb(images[key]);
     } else {
-      var imgurl = roomcacheurl + "/" + key + ext;
+      const imgurl = roomcacheurl + "/" + key + ext;
       images[key] = {
         url: imgurl.substr(roomcacheurl.indexOf("/")),
         key: key,
@@ -339,8 +334,8 @@ var Room = function (url, rooms) {
     return members;
   };
   this.getMembersInfo = function () {
-    var ret = [];
-    for (var i = 0; i < members.length; i++) {
+    const ret = [];
+    for (let i = 0; i < members.length; i++) {
       ret.push(members[i].info);
     }
     return ret;
@@ -350,8 +345,8 @@ var Room = function (url, rooms) {
 /* Server class.
  */
 this.Server = function (server) {
-  var socket = io(server);
-  var rooms = {};
+  const socket = io(server);
+  const rooms = {};
 
   fs.readdir("static/roomcache", function (err) {
     if (err) {
@@ -363,9 +358,9 @@ this.Server = function (server) {
     return rooms;
   };
 
-  this.getPublicRooms = function (list) {
-    var pubrooms = {};
-    for (var i in rooms) {
+  this.getPublicRooms = function () {
+    const pubrooms = {};
+    for (const i in rooms) {
       if (i.indexOf("hidden") !== 0) {
         pubrooms[i] = rooms[i];
       }
@@ -374,13 +369,13 @@ this.Server = function (server) {
   };
 
   this.uploadImage = function (req, roomid, buf, callback) {
-    var room = rooms[roomid];
+    const room = rooms[roomid];
     if (!room) {
       callback(404);
       return;
     }
-    var clientid = req.headers["x-client-id"];
-    var client = room.clientById(clientid);
+    const clientid = req.headers["x-client-id"];
+    const client = room.clientById(clientid);
     if (client) {
       callback(403);
       return;
@@ -391,7 +386,7 @@ this.Server = function (server) {
   };
 
   socket.on("connection", function (client) {
-    var SRVclient = {
+    const SRVclient = {
       info: {
         name: '<span style="color: red">' + ServerName + "</span>",
       },
@@ -437,7 +432,7 @@ this.Server = function (server) {
       }
       //Client has initiated the handshake procedure
       if ("connect" in data) {
-        var room;
+        let room;
         if (client.data.room) {
           client.Disconnect("You are already in a room.");
           return;
@@ -462,8 +457,8 @@ this.Server = function (server) {
       }
       if ("command" in data) {
         //TODO: Validate commands.
-        var cmd = data.command;
-        var room = client.data.room;
+        const cmd = data.command;
+        const room = client.data.room;
         try {
           room.DoCommand(cmd);
           new Packet()
@@ -475,11 +470,11 @@ this.Server = function (server) {
       }
       if ("chat" in data) {
         //TODO: Check that msg is a string.
-        var msg = data.chat;
-        var room = client.data.room;
+        let msg = data.chat;
+        const room = client.data.room;
         if (!room) return;
 
-        var htmlEntities = function (str) {
+        const htmlEntities = function (str) {
           return String(str)
             .replace(/&/g, "&amp;")
             .replace(/</g, "&lt;")
@@ -488,13 +483,13 @@ this.Server = function (server) {
         };
 
         if (msg.indexOf("/name") === 0) {
-          var name = msg.substring(msg.indexOf(" ") + 1);
+          const name = msg.substring(msg.indexOf(" ") + 1);
           if (name.length > 20) {
             new Packet().Chat(SRVclient, "Name too long").Send(client);
           } else if (client.data.room.clientByName(name) !== null) {
             new Packet().Chat(SRVclient, "Name already taken").Send(client);
           } else {
-            var old = client.info.name;
+            const old = client.info.name;
             client.info.name = htmlEntities(name);
             new Packet()
               .nameChange(client, old, false)
