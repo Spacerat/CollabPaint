@@ -25,27 +25,21 @@ paint.Layer = function (name) {
   this.name = name;
 };
 
+function validate_position(pos) {
+  for (const key in pos) {
+    if (!(key === "x" || key === "y")) return false;
+    if (!isInteger(pos[key])) return false;
+  }
+  return true;
+}
+
+function validate_points(points) {
+  return points.every(validate_position);
+}
+
 paint.Document = function () {
   let history = [];
   let layers = [];
-
-  const validate_position = function (pos) {
-    for (const n in pos) {
-      if (n == "x" || n == "y") {
-        if (isInteger(pos[n]) === false) {
-          return false;
-        }
-      } else return false;
-    }
-    return true;
-  };
-
-  const validate_points = function (points) {
-    for (let i = 0; i < points.length; i++) {
-      if (!validate_position(points[i])) return false;
-    }
-    return true;
-  };
 
   const validate = function (dict, name, checktype) {
     const v = dict[name];
