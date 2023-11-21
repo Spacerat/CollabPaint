@@ -1,8 +1,8 @@
 /* Packet class. 
     Example use of chaining: new Packet().acceptJoin().fullText(room).clientList(room).Send(client);
 */
-this.Packet = function () {
-  var data = {};
+exports.Packet = function () {
+  const data = {};
 
   //reject_join, sent to clients who have been rejected from a room for some @reason
   this.Reject = function (reason) {
@@ -25,6 +25,7 @@ this.Packet = function () {
     if (room) {
       data.member_count = room.member_count;
       data.members = room.getMembersInfo();
+      data.reason = reason;
     }
     return this;
   };
@@ -67,6 +68,7 @@ this.Packet = function () {
     data[name] = ndata;
     return this;
   };
+
   ///////////////////////////////
   //Send this packet to a client;
   this.Send = function (client) {
@@ -83,7 +85,7 @@ this.Packet = function () {
   };
 
   //Send this packet to all clients in @room other than @exclude
-  this.broadcastToRoom = function (socket, room, exclude) {
+  this.broadcastToRoom = function (room, exclude) {
     var i;
     if (!room) return; //TODO: This should never happen, but it does. Find out why.
 
