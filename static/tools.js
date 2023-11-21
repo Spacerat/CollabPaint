@@ -29,8 +29,8 @@ tools = new (function () {
 
   //Given a mouse event, find the mouse position relative to an element.
   this.getRelativeMousePos = function (e, element) {
-    var x;
-    var y;
+    let x;
+    let y;
     if (e.pageX || e.pageY) {
       x = e.pageX;
       y = e.pageY;
@@ -44,7 +44,7 @@ tools = new (function () {
         document.body.scrollTop +
         document.documentElement.scrollTop;
     }
-    var abspos = this.findAbsolutePosition(element);
+    const abspos = this.findAbsolutePosition(element);
     x -= abspos.x;
     y -= abspos.y;
     return { x: x, y: y };

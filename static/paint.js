@@ -8,35 +8,35 @@ Paint = {
 };
 
 Paint.tools.Brush = function (data) {
-  var points = data.points;
-  var pos = data.pos;
+  let points = data.points;
+  let pos = data.pos;
   this.name = "Brush";
 
   if (points == null && pos == null) {
-    throw "Error";
+    throw new Error("Error");
   } else if (points == null) {
     points = [];
     points.push(pos);
   } else {
     pos = points[0];
   }
-  var lineWidth = data.lineWidth || Paint.settings.Brush.size.getValue();
-  var strokeStyle = data.strokeStyle || data.fgcol;
+  const lineWidth = data.lineWidth || Paint.settings.Brush.size.getValue();
+  const strokeStyle = data.strokeStyle || data.fgcol;
 
   this.Render = function (layer) {
-    var ctx = layer.canvasElm.getContext("2d");
+    const ctx = layer.canvasElm.getContext("2d");
     ctx.beginPath();
     ctx.moveTo(points[0].x, points[0].y);
 
     /*
-		for (var i = 1; i < points.length; i+=2) {
+		for (const i = 1; i < points.length; i+=2) {
 			//ctx.moveTo(cx, cy);
 			
 			cx = cx + points[i-1].x;
 			cy = cy + points[i-1].y;			
 			
-			var ctrlx = cx;
-			var ctrly = cy;
+			const ctrlx = cx;
+			const ctrly = cy;
 			
 			ctx.quadraticCurveTo(ctrlx, ctrly, cx + points[i].x, cy + points[i].y);
 			cx = cx + points[i].x;
@@ -45,7 +45,7 @@ Paint.tools.Brush = function (data) {
 		}
 		*/
 
-    for (var i = 1; i < points.length; i++) {
+    for (let i = 1; i < points.length; i++) {
       ctx.lineTo(points[i].x, points[i].y);
     }
 
@@ -89,16 +89,12 @@ Paint.tools.Brush.UI = function () {
 };
 
 Paint.tools.Eraser = function (data) {
-  var points = data.points;
-  var pos = data.pos;
+  let points = data.points;
+  let pos = data.pos;
   this.name = "Eraser";
 
-  var alpha;
-  if (data.alpha !== undefined) {
-    alpha = data.alpha;
-  } else {
-    alpha = Paint.settings.globals.opacity.getValue() / 255.0;
-  }
+  const alpha = data.alpha ?? Paint.settings.globals.opacity.getValue() / 255.0;
+
   if (points == null && pos == null) {
     throw "Error";
   } else if (points == null) {
@@ -107,14 +103,14 @@ Paint.tools.Eraser = function (data) {
   } else {
     pos = points[0];
   }
-  var lineWidth = data.lineWidth || Paint.settings.Eraser.size.getValue();
+  const lineWidth = data.lineWidth || Paint.settings.Eraser.size.getValue();
 
   this.Render = function (layer, preview) {
-    var ctx = layer.canvasElm.getContext("2d");
+    const ctx = layer.canvasElm.getContext("2d");
     ctx.beginPath();
     ctx.moveTo(points[0].x, points[0].y);
 
-    for (var i = 1; i < points.length; i++) {
+    for (let i = 1; i < points.length; i++) {
       ctx.lineTo(points[i].x, points[i].y);
     }
 
@@ -166,13 +162,13 @@ Paint.tools.Eraser.UI = function () {
 
 Paint.tools.Line = function (data) {
   this.name = "Line";
-  var pos = data.pos;
-  var pos2 = data.pos2;
-  var lineWidth = data.lineWidth || Paint.settings.Line.size.getValue();
-  var strokeStyle = data.strokeStyle || data.fgcol;
+  let pos = data.pos;
+  let pos2 = data.pos2;
+  const lineWidth = data.lineWidth || Paint.settings.Line.size.getValue();
+  const strokeStyle = data.strokeStyle || data.fgcol;
 
   this.Render = function (layer) {
-    var ctx = layer.canvasElm.getContext("2d");
+    const ctx = layer.canvasElm.getContext("2d");
     if (!(pos && pos2)) return;
     ctx.beginPath();
     ctx.moveTo(pos.x, pos.y);
@@ -219,13 +215,13 @@ Paint.tools.Pointer.UI = function () {
 Paint.tools.Pointer.icon = "✥";
 
 function drawEllipse(ctx, x, y, w, h) {
-  var kappa = 0.5522848;
-  var ox = (w / 2) * kappa; // control point offset horizontal
-  var oy = (h / 2) * kappa; // control point offset vertical
-  var xe = x + w; // x-end
-  var ye = y + h; // y-end
-  var xm = x + w / 2; // x-middle
-  var ym = y + h / 2; // y-middle
+  const kappa = 0.5522848;
+  const ox = (w / 2) * kappa; // control point offset horizontal
+  const oy = (h / 2) * kappa; // control point offset vertical
+  const xe = x + w; // x-end
+  const ye = y + h; // y-end
+  const xm = x + w / 2; // x-middle
+  const ym = y + h / 2; // y-middle
 
   ctx.beginPath();
   ctx.moveTo(x, ym);
@@ -238,18 +234,16 @@ function drawEllipse(ctx, x, y, w, h) {
 
 Paint.tools.Shape = function (data) {
   this.name = "Shape";
-  var pos = data.pos;
-  var pos2 = data.pos2;
-  var strokeWidth;
-
-  if (data.strokeWidth !== undefined) strokeWidth = data.strokeWidth;
-  else strokeWidth = Paint.settings.Shape.strokeWidth.getValue();
-  var strokeStyle = data.strokeStyle || data.bgcol;
-  var fillStyle = data.fillStyle || data.fgcol;
-  var type = data.type || Paint.settings.Shape.Type.value;
+  let pos = data.pos;
+  let pos2 = data.pos2;
+  const strokeWidth =
+    data.strokeWidth ?? Paint.settings.Shape.strokeWidth.getValue();
+  const strokeStyle = data.strokeStyle || data.bgcol;
+  const fillStyle = data.fillStyle || data.fgcol;
+  const type = data.type || Paint.settings.Shape.Type.value;
 
   this.Render = function (layer) {
-    var ctx = layer.canvasElm.getContext("2d");
+    const ctx = layer.canvasElm.getContext("2d");
     if (!(pos && pos2)) return;
     ctx.fillStyle = fillStyle;
     ctx.lineWidth = strokeWidth;
@@ -302,9 +296,9 @@ Paint.tools.Shape.UI = function () {
 };
 
 Paint.ui.Select = function (items) {
-  var elm = document.createElement("select");
-  for (var i = 0; i < items.length; i++) {
-    var opt = new Option(items[i], null);
+  const elm = document.createElement("select");
+  for (let i = 0; i < items.length; i++) {
+    const opt = new Option(items[i], null);
     opt.value = items[i];
     elm.add(opt, null);
   }
@@ -313,13 +307,13 @@ Paint.ui.Select = function (items) {
 
 Paint.ui.button = function ({ text, onClick, icon, title }) {
   // Create a button with text and a optional icon
-  var elm = document.createElement("button");
+  const elm = document.createElement("button");
   elm.innerHTML = text;
   elm.onclick = onClick;
   elm.title = title ?? text ?? undefined;
   if (icon) {
     // prepend the icon inside the button
-    var iconElm = document.createElement("img");
+    const iconElm = document.createElement("img");
     iconElm.src = icon;
     elm.prepend(iconElm);
   }
@@ -327,29 +321,29 @@ Paint.ui.button = function ({ text, onClick, icon, title }) {
 };
 
 Paint.ui.colourPicker = function (col, painter) {
-  var elm = document.createElement("input");
+  const elm = document.createElement("input");
   elm.type = "color";
   elm.style.width = "4em";
   elm.value = col;
   console.log({ tools });
   elm.getArgb = function () {
     console.log({ tools });
-    var rgb = tools.hexToRgb(elm.value);
-    var alpha = Paint.settings.globals.opacity.getValue() / 255.0;
+    const rgb = tools.hexToRgb(elm.value);
+    const alpha = Paint.settings.globals.opacity.getValue() / 255.0;
     const r = rgb.r;
     const g = rgb.g;
     const b = rgb.b;
     return `rgba(${r},${g},${b},${alpha})`;
   };
   elm.onShow = function () {
-    var containerElm = document.getElementById("paint_canvas");
-    var ctx = painter.getCurrentLayer().canvasElm.getContext("2d");
-    var listener = function (evt) {
+    const containerElm = document.getElementById("paint_canvas");
+    const ctx = painter.getCurrentLayer().canvasElm.getContext("2d");
+    const listener = function (evt) {
       if (evt.button === 2) {
-        var pos = tools.getRelativeMousePos(evt, evt.target);
+        const pos = tools.getRelativeMousePos(evt, evt.target);
         pos.x += containerElm.scrollLeft;
         pos.y += containerElm.scrollTop;
-        var data = ctx.getImageData(pos.x, pos.y, 1, 1).data;
+        const data = ctx.getImageData(pos.x, pos.y, 1, 1).data;
         //TODO: this will cause problems with multiple layers.
 
         if (data[3] === 0) {
@@ -374,13 +368,13 @@ Paint.ui.colourPicker = function (col, painter) {
 
 Paint.ui.label = function (HTML, type) {
   type = type || "strong";
-  var elm = document.createElement(type);
+  const elm = document.createElement(type);
   elm.innerHTML = HTML;
   return elm;
 };
 
 Paint.ui.labelled = function (label, elm) {
-  var div = document.createElement("div");
+  const div = document.createElement("div");
   div.className = "tool";
   div.appendChild(label);
   div.appendChild(elm);
@@ -388,14 +382,14 @@ Paint.ui.labelled = function (label, elm) {
 };
 
 Paint.ui.div = function (elements) {
-  var div = document.createElement("div");
+  const div = document.createElement("div");
   div.className = "tool";
   div.append(...elements);
   return div;
 };
 
 Paint.ui.slider = function (min, max, value) {
-  var elm = document.createElement("input");
+  const elm = document.createElement("input");
   try {
     elm.type = "range";
     elm.min = min;
@@ -413,12 +407,12 @@ Paint.ui.slider = function (min, max, value) {
 };
 
 Paint.Toolbar = function (div_id, painter) {
-  var divElm = document.getElementById(div_id);
-  var fileElm = document.createElement("div");
-  var toolsElm = document.createElement("select");
-  var settingsElm = document.createElement("div");
+  const divElm = document.getElementById(div_id);
+  const fileElm = document.createElement("div");
+  const toolsElm = document.createElement("select");
+  const settingsElm = document.createElement("div");
   settingsElm.id = "settings";
-  var toolSettingsElm = document.createElement("div");
+  const toolSettingsElm = document.createElement("div");
   toolSettingsElm.id = "toolSettings";
 
   //Add the sections
@@ -445,7 +439,7 @@ Paint.Toolbar = function (div_id, painter) {
     Paint.ui.button({ text: "Save", onClick: painter.Save, icon: "/disk.png" })
   );
 
-  for (var b in Paint.tools) {
+  for (const b in Paint.tools) {
     toolsElm.add(new Option(b), null);
   }
   toolsElm.onchange = function () {
@@ -507,11 +501,9 @@ Paint.Layer = function (opts, id) {
   this.canvasElm.className = "canvas";
   this.canvasElm.id = "layer_" + this.name;
   this.id = id;
-  var history = [];
+  const history = [];
   this.Attach = function (parent) {
     parent.appendChild(this.canvasElm);
-    //this.canvasElm.width = parent.offsetWidth;
-    //this.canvasElm.height = parent.offsetHeight;
   };
   this.Clear = function () {
     this.canvasElm
@@ -529,26 +521,24 @@ Paint.Layer = function (opts, id) {
   };
 
   this.RenderHistory = function (painter) {
-    for (var i = 0; i < history.length; i++) {
-      painter.ProcessCommand(history[i]);
-    }
+    history.forEach((command) => painter.ProcessCommand(command));
   };
 };
 
 Paint.Painter = function () {
-  var layers = [];
-  var current_layer = null;
-  var canvas;
-  var that = this;
-  var selected_tool = "";
-  var swap_tool = "Pointer";
-  var current_tool = null;
-  var socket;
-  var toolbar = null;
-  var last_sent_id;
-  var images = {};
+  const layers = [];
+  let current_layer = null;
+  let canvas;
+  const that = this;
+  let selected_tool = "";
+  let swap_tool = "Pointer";
+  let current_tool = null;
+  let socket;
+  let toolbar = null;
+  let last_sent_id;
+  const images = {};
 
-  var ChatFix = function () {
+  const ChatFix = function () {
     $("#chatcont").height(
       $("#rightpanel").height() -
         $("#panelhead").height() -
@@ -561,7 +551,7 @@ Paint.Painter = function () {
   this.AddLayer = function (opts) {
     if (!opts) opts = {};
     if (!opts.name) opts.name = "Layer_" + (layers.length + 1);
-    var l = new Paint.Layer(opts, layers.length);
+    const l = new Paint.Layer(opts, layers.length);
     layers.push(l);
     canvas.AddLayer(l);
     if (layers.length === 1) {
@@ -580,37 +570,34 @@ Paint.Painter = function () {
 
   this.SetupChat = function () {
     $("#chatform").submit(function () {
-      var txt = $("#chatinput").val();
+      const txt = $("#chatinput").val();
       $("#chatinput").val("");
       if (!txt) return false;
       socket.send({ chat: txt });
       return false;
     });
 
-    var dragging = false;
-    var dragoffset = 0;
+    let dragging = false;
+    let dragoffset = 0;
 
-    window.addEventListener(
-      "mousemove",
-      function (evt) {
-        if (dragging) {
-          $("#rightpanel").width(
-            document.body.clientWidth - evt.pageX - 13 + dragoffset
-          );
-          ChatFix();
-        }
-      },
-      false
-    );
-    window.addEventListener(
-      "mouseup",
-      function () {
-        dragging = false;
-      },
-      false
-    );
+    function onMouseMove(evt) {
+      if (dragging) {
+        $("#rightpanel").width(
+          document.body.clientWidth - evt.pageX - 13 + dragoffset
+        );
+        ChatFix();
+      }
+    }
+
+    function onMouseUp() {
+      dragging = false;
+    }
+
+    window.addEventListener("mousemove", onMouseMove, false);
+    window.addEventListener("mouseup", onMouseUp, false);
+
     $("#rightgrabber").mousedown(function (evt) {
-      var pos = tools.getRelativeMousePos(
+      const pos = tools.getRelativeMousePos(
         evt,
         document.getElementById("rightpanel")
       );
@@ -621,14 +608,14 @@ Paint.Painter = function () {
       ChatFix();
     });
 
-    var usc = $("#usercount");
-    var usrs = $("#users");
+    const usc = $("#usercount");
+    const usrs = $("#users");
     usrs.toggle();
     usc.mouseover(function () {
       usrs.toggle("fast");
     });
     usc.mousemove(function () {
-      var pos = usc.position();
+      const pos = usc.position();
       //pos.top += usc.height();
       usrs.offset(pos);
     });
@@ -638,10 +625,10 @@ Paint.Painter = function () {
   };
 
   this.ProcessChat = function (msg) {
-    var elm = document.getElementById("chat");
+    const elm = document.getElementById("chat");
 
     $("#chat").append(function () {
-      var txt = msg.text;
+      const txt = msg.text;
       if (msg.sender) {
         return `<span class="chatname">${msg.sender.name}:</span> ${txt}<br/>`;
       } else {
@@ -675,11 +662,11 @@ Paint.Painter = function () {
         }
         if (images[command.key] !== undefined) {
           if (images[command.key].complete) {
-            var ctx = canv.canvasElm.getContext("2d");
+            const ctx = canv.canvasElm.getContext("2d");
             ctx.drawImage(images[command.key], command.pos.x, command.pos.y);
           }
         } else {
-          var n = new Image();
+          const n = new Image();
           n.src = command.url;
           images[command.key] = n;
           n.onload = function () {
@@ -706,16 +693,14 @@ Paint.Painter = function () {
     });
     socket.on("message", function (data) {
       //Process network messages
-      for (var msgname in data) {
-        var msg = data[msgname];
+      for (const msgname in data) {
+        const msg = data[msgname];
         switch (msgname) {
           case "history":
-            for (var i = 0; i < msg.length; i++) {
-              that.ProcessCommand(msg[i], true, socket);
-            }
+            msg.forEach((message) => that.ProcessCommand(message, true));
             break;
           case "command":
-            that.ProcessCommand(msg, true, socket);
+            that.ProcessCommand(msg, true);
             break;
           case "reject":
             alert("You have been rejected from the room: " + msg.reason);
@@ -746,12 +731,10 @@ Paint.Painter = function () {
           case "new_room":
             break;
           case "members":
-            var html = "<ul>";
-            html += msg.map((m) => `<li>${m.name}</li>`).join("");
-            html += "</ul>";
-            $("#users").html(html);
+            $("#users").html(
+              `<ul>${msg.map((m) => `<li>${m.name}</li>`).join("")}</ul>`
+            );
             break;
-
           case "new_member":
             break;
           default:
@@ -764,7 +747,7 @@ Paint.Painter = function () {
 
   this.MouseDown = function (pos, button) {
     if (!current_tool && button !== 1) {
-      var fgcol, bgcol, tcol;
+      let fgcol, bgcol, tcol;
       fgcol = Paint.settings.globals.fgcolour.getArgb();
       bgcol = Paint.settings.globals.bgcolour.getArgb();
       if (button === 2) {
@@ -874,15 +857,15 @@ Paint.Painter = function () {
 
 Paint.ProgressBar = function (parent) {
   if (!parent) parent = document.body;
-  var progbox = document.createElement("div");
-  var progress = document.createElement("div");
+  const progbox = document.createElement("div");
+  const progress = document.createElement("div");
   progbox.className = "progbox";
   progress.className = "progress";
   progbox.appendChild(progress);
   parent.appendChild(progbox);
 
-  var pos = 0;
-  var m = setInterval(function () {
+  let pos = 0;
+  const m = setInterval(function () {
     pos += 1;
     progress.style.backgroundPosition = pos + "px 0px";
   }, 50);
@@ -916,11 +899,11 @@ Paint.ProgressBar = function (parent) {
 };
 
 Paint.Canvas = function (object_id, painter) {
-  var containerElm;
-  var layersElm;
-  var temp_layer = new Paint.Layer({ name: "temp" });
-  var w = 1900;
-  var h = 1060;
+  let containerElm;
+  let layersElm;
+  const temp_layer = new Paint.Layer({ name: "temp" });
+  const w = 1900;
+  const h = 1060;
 
   this.Init = function () {
     containerElm = document.getElementById(object_id);
@@ -929,21 +912,21 @@ Paint.Canvas = function (object_id, painter) {
     containerElm.appendChild(layersElm);
     temp_layer.Attach(layersElm);
     temp_layer.Resize(w, h);
-    var downEvent = function (evt) {
-      var pos = tools.getRelativeMousePos(evt, temp_layer.canvasElm);
+    const downEvent = function (evt) {
+      const pos = tools.getRelativeMousePos(evt, temp_layer.canvasElm);
       pos.x += containerElm.scrollLeft;
       pos.y += containerElm.scrollTop;
       painter.MouseDown(pos, evt.button);
     };
-    var moveEvent = function (evt) {
-      var pos = tools.getRelativeMousePos(evt, temp_layer.canvasElm);
+    const moveEvent = function (evt) {
+      const pos = tools.getRelativeMousePos(evt, temp_layer.canvasElm);
       pos.x += containerElm.scrollLeft;
       pos.y += containerElm.scrollTop;
       painter.MouseMove(pos);
     };
-    var upEvent = function (evt) {
+    const upEvent = function (evt) {
       //evt.preventDefault();
-      var pos = tools.getRelativeMousePos(evt, temp_layer.canvasElm);
+      const pos = tools.getRelativeMousePos(evt, temp_layer.canvasElm);
       pos.x += containerElm.scrollLeft;
       pos.y += containerElm.scrollTop;
       painter.MouseUp(pos);
@@ -955,7 +938,7 @@ Paint.Canvas = function (object_id, painter) {
       }
     };
 
-    var resfunc = function () {
+    const resfunc = function () {
       containerElm.style.height =
         window.innerHeight - $(containerElm).offset().top + "px";
     };
@@ -963,7 +946,7 @@ Paint.Canvas = function (object_id, painter) {
     $(window).resize(resfunc);
     $("#vertical_stretch").resize(resfunc);
 
-    var tevent = function (func, preventdefault) {
+    const tevent = function (func, preventdefault) {
       return function (evt) {
         if (painter.getSelectedTool() == "Pointer") {
           return;
@@ -1016,8 +999,8 @@ Paint.Canvas = function (object_id, painter) {
         evt.dataTransfer.dropEffect = "copy";
         $(temp_layer.canvasElm).css("background", "#BBB").css("opacity", "0.5");
         temp_layer.Clear();
-        var ctx = temp_layer.canvasElm.getContext("2d");
-        var pa = ctx.globalAlpha;
+        const ctx = temp_layer.canvasElm.getContext("2d");
+        const pa = ctx.globalAlpha;
         ctx.lineWidth = 2;
         ctx.globalAlpha = 1.0;
         ctx.fillStyle = "black";
@@ -1037,24 +1020,24 @@ Paint.Canvas = function (object_id, painter) {
       },
       false
     );
-    var dragend = function () {
+    const dragend = function () {
       $(temp_layer.canvasElm).css("background", "none");
     };
     containerElm.addEventListener("dragend", dragend, false);
     containerElm.addEventListener("dragleave", dragend, false);
 
-    var keycache = {};
+    const keycache = {};
     function onDrop(evt) {
       temp_layer.Clear();
       evt.stopPropagation();
       evt.preventDefault();
 
-      var pos = {
+      const pos = {
         x: evt.layerX,
         y: evt.layerY,
       };
 
-      var file = evt.dataTransfer.files[0];
+      const file = evt.dataTransfer.files[0];
       if (file.fileSize > 1048576) {
         alert("File too large. Image uploads are limited to 1 MB.");
         return;
@@ -1064,22 +1047,22 @@ Paint.Canvas = function (object_id, painter) {
         return;
       }
 
-      var loadedimage = null;
-      var loadedkey = null;
-      var computedhash = null;
+      let loadedimage = null;
+      let loadedkey = null;
+      let computedhash = null;
 
-      var cacheClientImage = function () {
+      const cacheClientImage = function () {
         if (loadedkey && loadedimage && computedhash) {
           painter.addImage(loadedkey, loadedimage);
           keycache[computedhash] = loadedkey;
         }
       };
 
-      var reader = new FileReader();
-      var breader = new FileReader();
+      const reader = new FileReader();
+      const breader = new FileReader();
       if (reader) {
         reader.onload = function (e) {
-          var img = new Image();
+          const img = new Image();
           img.onload = function () {
             loadedimage = img;
             cacheClientImage();
@@ -1089,11 +1072,11 @@ Paint.Canvas = function (object_id, painter) {
         breader.onload = function (e) {
           computedhash = b64_md5(e.target.result);
           if (keycache[computedhash] === undefined) {
-            var xhr = new XMLHttpRequest();
-            var up = xhr.upload;
-            var uploadbar = new Paint.ProgressBar(containerElm);
+            const xhr = new XMLHttpRequest();
+            const up = xhr.upload;
+            const uploadbar = new Paint.ProgressBar(containerElm);
             xhr.onload = function () {
-              var obj = JSON.parse(xhr.responseText);
+              const obj = JSON.parse(xhr.responseText);
               loadedkey = obj.key;
               cacheClientImage();
               painter.sendImageDrop(obj.key, pos);
