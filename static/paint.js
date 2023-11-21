@@ -1044,85 +1044,82 @@ Paint.Canvas = function (object_id, painter) {
     containerElm.addEventListener("dragleave", dragend, false);
 
     var keycache = {};
-    containerElm.addEventListener(
-      "drop",
-      function (evt) {
-        temp_layer.Clear();
-        evt.stopPropagation();
-        evt.preventDefault();
+    function onDrop(evt) {
+      temp_layer.Clear();
+      evt.stopPropagation();
+      evt.preventDefault();
 
-        var pos = {
-          x: evt.layerX,
-          y: evt.layerY,
+      var pos = {
+        x: evt.layerX,
+        y: evt.layerY,
+      };
+
+      var file = evt.dataTransfer.files[0];
+      if (file.fileSize > 1048576) {
+        alert("File too large. Image uploads are limited to 1 MB.");
+        return;
+      }
+      if (file.type.indexOf("image/") !== 0) {
+        alert("Only images are supported.");
+        return;
+      }
+
+      var loadedimage = null;
+      var loadedkey = null;
+      var computedhash = null;
+
+      var cacheClientImage = function () {
+        if (loadedkey && loadedimage && computedhash) {
+          painter.addImage(loadedkey, loadedimage);
+          keycache[computedhash] = loadedkey;
+        }
+      };
+
+      var reader = new FileReader();
+      var breader = new FileReader();
+      if (reader) {
+        reader.onload = function (e) {
+          var img = new Image();
+          img.onload = function () {
+            loadedimage = img;
+            cacheClientImage();
+          };
+          img.src = e.target.result;
         };
+        breader.onload = function (e) {
+          computedhash = b64_md5(e.target.result);
+          if (keycache[computedhash] === undefined) {
+            var xhr = new XMLHttpRequest();
+            var up = xhr.upload;
+            var uploadbar = new Paint.ProgressBar(containerElm);
+            xhr.onload = function () {
+              var obj = JSON.parse(xhr.responseText);
+              loadedkey = obj.key;
+              cacheClientImage();
+              painter.sendImageDrop(obj.key, pos);
+              uploadbar.Remove();
+            };
+            up.onprogress = function (pevt) {
+              uploadbar.setPercentage((100 * pevt.loaded) / pevt.total);
+            };
+            xhr.open("post", painter.room_name + "/upload", true);
+            xhr.setRequestHeader("X-File-Size", file.fileSize);
+            xhr.setRequestHeader("X-File-Name", file.fileName);
+            xhr.send(file);
 
-        var file = evt.dataTransfer.files[0];
-        if (file.fileSize > 1048576) {
-          alert("File too large. Image uploads are limited to 1 MB.");
-          return;
-        }
-        if (file.type.indexOf("image/") !== 0) {
-          alert("Only images are supported.");
-          return;
-        }
-
-        var loadedimage = null;
-        var loadedkey = null;
-        var computedhash = null;
-
-        var cacheClientImage = function () {
-          if (loadedkey && loadedimage && computedhash) {
-            painter.addImage(loadedkey, loadedimage);
-            keycache[computedhash] = loadedkey;
+            uploadbar.setRelativePos(pos.x, pos.y + 20);
+          } else {
+            painter.sendImageDrop(keycache[computedhash], pos);
           }
         };
+        reader.readAsDataURL(file);
+        breader.readAsBinaryString(file);
+      }
 
-        var reader = new FileReader();
-        var breader = new FileReader();
-        if (reader) {
-          reader.onload = function (e) {
-            var img = new Image();
-            img.onload = function () {
-              loadedimage = img;
-              cacheClientImage();
-            };
-            img.src = e.target.result;
-          };
-          breader.onload = function (e) {
-            computedhash = b64_md5(e.target.result);
-            if (keycache[computedhash] === undefined) {
-              var xhr = new XMLHttpRequest();
-              var up = xhr.upload;
-              var uploadbar = new Paint.ProgressBar(containerElm);
-              xhr.onload = function () {
-                var obj = JSON.parse(xhr.responseText);
-                loadedkey = obj.key;
-                cacheClientImage();
-                painter.sendImageDrop(obj.key, pos);
-                uploadbar.Remove();
-              };
-              up.onprogress = function (pevt) {
-                uploadbar.setPercentage((100 * pevt.loaded) / pevt.total);
-              };
-              xhr.open("post", painter.room_name + "/upload", true);
-              xhr.setRequestHeader("X-File-Size", file.fileSize);
-              xhr.setRequestHeader("X-File-Name", file.fileName);
-              xhr.send(file);
-
-              uploadbar.setRelativePos(pos.x, pos.y + 20);
-            } else {
-              painter.sendImageDrop(keycache[computedhash], pos);
-            }
-          };
-          reader.readAsDataURL(file);
-          breader.readAsBinaryString(file);
-        }
-
-        dragend();
-        return false;
-      },
-      false
-    );
+      dragend();
+      return false;
+    }
+    containerElm.addEventListener("drop", onDrop, false);
   };
 
   this.AddLayer = function (layer) {
